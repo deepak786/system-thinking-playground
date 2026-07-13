@@ -20,6 +20,7 @@ covering what it teaches, how to use it, and implementation notes.
 | Demo | Teaches | Docs |
 |---|---|---|
 | How WhatsApp Delivers Messages | Queue · FIFO · Message IDs · Message Delivery | [README](src/demos/whatsapp-delivery/README.md) |
+| How LinkedIn Finds Your Connection Level | Graph · BFS · Queue · Shortest Path | [README](src/demos/linkedin-connections/README.md) |
 
 ## Architecture
 
@@ -27,7 +28,7 @@ covering what it teaches, how to use it, and implementation notes.
 src/
   components/            # app shell (Layout with sidebar + routed outlet)
   pages/                 # Home page (demo cards)
-  shared/                # cross-demo UI (Button, Card, Phone, StatusBadge)
+  shared/                # cross-demo UI (Button, Card, Phone, StatusBadge, WatchOnYouTube)
   lib/                   # tiny utilities (cn, time formatting)
   demos/
     types.ts             # DemoDefinition contract
