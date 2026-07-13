@@ -1,10 +1,13 @@
+import { useLocation } from 'react-router-dom'
+
 const SITE_NAME = 'System Thinking Playground'
+const SITE_URL = 'https://play.deepakdroid.xyz'
 
 type SeoProps = {
   /** Page title; rendered as "<title> | System Thinking Playground". */
   title?: string
   description: string
-  /** Absolute URL (or public/ path) of the social share image. */
+  /** Social share image: public/ path (e.g. "/og/foo.png") or absolute URL. */
   ogImage?: string
 }
 
@@ -14,26 +17,32 @@ type SeoProps = {
  * no Helmet-style library required.
  */
 export function Seo({ title, description, ogImage }: SeoProps) {
+  const { pathname } = useLocation()
   const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME
+  const pageUrl = `${SITE_URL}${pathname === '/' ? '' : pathname}`
+  // Social platforms require absolute image URLs.
+  const imageUrl = ogImage?.startsWith('/') ? `${SITE_URL}${ogImage}` : ogImage
 
   return (
     <>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
+      <link rel="canonical" href={pageUrl} />
 
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content={SITE_NAME} />
-      {ogImage && <meta property="og:image" content={ogImage} />}
+      <meta property="og:url" content={pageUrl} />
+      {imageUrl && <meta property="og:image" content={imageUrl} />}
 
       <meta
         name="twitter:card"
-        content={ogImage ? 'summary_large_image' : 'summary'}
+        content={imageUrl ? 'summary_large_image' : 'summary'}
       />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      {ogImage && <meta name="twitter:image" content={ogImage} />}
+      {imageUrl && <meta name="twitter:image" content={imageUrl} />}
     </>
   )
 }
