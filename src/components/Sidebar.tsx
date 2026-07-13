@@ -1,18 +1,17 @@
+import { Link, NavLink } from 'react-router-dom'
 import { Sparkles } from 'lucide-react'
 import type { DemoDefinition } from '../demos/types'
 import { cn } from '../lib/cn'
 
 type SidebarProps = {
   demos: DemoDefinition[]
-  activeId: string
-  onSelect: (id: string) => void
 }
 
-/** Left navigation listing all demos. Locked entries are "coming soon". */
-export function Sidebar({ demos, activeId, onSelect }: SidebarProps) {
+/** Left navigation: brand (links home) plus one NavLink per registered demo. */
+export function Sidebar({ demos }: SidebarProps) {
   return (
     <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-72">
-      <div className="flex items-center gap-2.5 px-1">
+      <Link to="/" className="flex items-center gap-2.5 rounded-xl px-1 py-1 transition-colors hover:bg-slate-900">
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-500/40">
           <Sparkles className="h-5 w-5" />
         </span>
@@ -22,25 +21,21 @@ export function Sidebar({ demos, activeId, onSelect }: SidebarProps) {
           </p>
           <p className="text-xs text-slate-500">Interactive Playground</p>
         </div>
-      </div>
+      </Link>
 
       <nav className="flex flex-col gap-1.5">
         {demos.map((demo) => {
           const Icon = demo.icon
-          const active = demo.id === activeId
-          const locked = Boolean(demo.comingSoon)
           return (
-            <button
+            <NavLink
               key={demo.id}
-              onClick={() => !locked && onSelect(demo.id)}
-              disabled={locked}
-              className={cn(
-                'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
-                active
-                  ? 'bg-slate-800 ring-1 ring-slate-700'
-                  : 'hover:bg-slate-900',
-                locked && 'cursor-not-allowed opacity-50 hover:bg-transparent',
-              )}
+              to={`/${demo.id}`}
+              className={({ isActive }) =>
+                cn(
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
+                  isActive ? 'bg-slate-800 ring-1 ring-slate-700' : 'hover:bg-slate-900',
+                )
+              }
             >
               <span
                 className={cn(
@@ -51,21 +46,14 @@ export function Sidebar({ demos, activeId, onSelect }: SidebarProps) {
                 <Icon className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-2">
-                  <span className="truncate text-sm font-semibold text-slate-100">
-                    {demo.title}
-                  </span>
-                  {locked && (
-                    <span className="rounded-full bg-slate-800 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-400 ring-1 ring-slate-700">
-                      Soon
-                    </span>
-                  )}
+                <span className="block truncate text-sm font-semibold text-slate-100">
+                  {demo.title}
                 </span>
                 <span className="mt-0.5 block truncate text-xs text-slate-500">
                   {demo.description}
                 </span>
               </span>
-            </button>
+            </NavLink>
           )
         })}
       </nav>

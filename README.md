@@ -25,20 +25,25 @@ covering what it teaches, how to use it, and implementation notes.
 
 ```
 src/
-  components/            # app-level shell (Sidebar, …)
+  components/            # app shell (Layout with sidebar + routed outlet)
+  pages/                 # Home page (demo cards)
   shared/                # cross-demo UI (Button, Card, Phone, StatusBadge)
   lib/                   # tiny utilities (cn, time formatting)
   demos/
     types.ts             # DemoDefinition contract
-    registry.ts          # single source of truth for all demos
+    demoRegistry.ts      # single source of truth for all demos
     <demo-name>/
       README.md          # per-demo docs (usage + implementation notes)
       <Demo>.tsx         # top-level component (layout only)
       types.ts           # demo-specific models
       hooks/             # demo state (custom hook, usually a reducer)
       components/        # small presentational pieces
-  App.tsx                # renders sidebar + active demo
+  App.tsx                # React Router routes, generated from the registry
 ```
+
+Routing: `/` is the Home page; each demo is served at `/<id>`
+(e.g. `/whatsapp-delivery`). Routes, the sidebar, and the Home cards are all
+generated from `demoRegistry.ts` — nothing is hardcoded.
 
 ## Adding a new demo
 
@@ -46,8 +51,8 @@ src/
    custom hook, UI in small presentational components).
 2. Write a short `README.md` in the demo folder: what it teaches, the
    controls, and any implementation notes.
-3. Register it in `src/demos/registry.ts` — add a `DemoDefinition` with the
-   component.
+3. Add one entry to `src/demos/demoRegistry.ts` (id, title, description,
+   difficulty, concepts, icon, component). The `id` becomes the URL.
 4. Link the README in the Demos table above.
 
-The sidebar and router update automatically from the registry.
+The route, sidebar entry, and Home card all appear automatically.
