@@ -16,7 +16,7 @@ export function ServerCard({ queued, active = false }: ServerCardProps) {
     <Card
       accent="violet"
       className={cn(
-        'w-full max-w-[260px] px-4 py-3 transition-colors',
+        'w-full max-w-[300px] px-4 py-3.5 transition-colors',
         active && 'ring-2 ring-violet-400/70',
       )}
     >
@@ -24,12 +24,12 @@ export function ServerCard({ queued, active = false }: ServerCardProps) {
         <motion.div
           animate={active ? { scale: [1, 1.12, 1] } : { scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300 ring-1 ring-violet-500/40"
+          className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300 ring-1 ring-violet-500/40"
         >
-          <Server className="h-5 w-5" />
+          <Server className="h-6 w-6" />
         </motion.div>
         <div className="text-left">
-          <p className="text-sm font-semibold text-slate-100">WhatsApp Server</p>
+          <p className="text-base font-semibold text-slate-100">WhatsApp Server</p>
           <p className="text-xs text-slate-400">Relays & stores messages</p>
         </div>
         <span className="ml-auto rounded-full bg-violet-500/15 px-2.5 py-1 text-xs font-bold text-violet-300 ring-1 ring-violet-500/30">

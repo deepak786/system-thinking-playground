@@ -58,7 +58,8 @@ export function FlowColumn({ state }: FlowColumnProps) {
 
       <QueueCard queue={queue} />
 
-      <FlowArrow label="deliver" active={aliceOnline && recipientMessages.length > 0} />
+      {/* Pulses while the queue is actively draining into Alice's phone */}
+      <FlowArrow label="deliver" active={aliceOnline && queue.length > 0} />
 
       <Phone name="Alice" online={aliceOnline} avatarColor="bg-sky-500" avatar="👩">
         <div className="flex flex-col gap-1.5">

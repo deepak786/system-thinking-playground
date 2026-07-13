@@ -1,0 +1,37 @@
+---
+description: Keep every demo understandable by non-technical viewers in under two minutes
+globs: src/demos/**
+alwaysApply: false
+---
+
+# Demo Simplicity Bar
+
+Every demo in this playground must pass one test: **can someone with zero
+backend knowledge understand it in under two minutes?** These are YouTube
+educational visualizations, not engineering documentation.
+
+## Rules
+
+- **Plain language everywhere the viewer can see.** Prefer "waiting to be
+  delivered" over "enqueued", "oldest first" over "FIFO ordering". If a
+  technical term IS the lesson (e.g. FIFO, Queue), introduce it visually and
+  pair it with a plain-language explanation nearby.
+- **One concept per demo.** If a demo needs to explain three new terms at
+  once, split it or cut scope.
+- **Show, don't tell.** Teach behavior through animation and motion (a message
+  visibly waiting, then moving) before adding any explanatory text.
+- **Explanations are one short sentence.** Example from the queue card:
+  "Temporary storage for messages waiting to be delivered." No paragraphs.
+- **Event logs read like a story**, not like server logs:
+  - ❌ `DELIVER_NEXT dispatched: dequeue head, status=delivered`
+  - ✅ `msg-3 delivered (first in → first out)`
+- **Slow enough to narrate.** Sequential animations (like the queue drain)
+  should be paced so a viewer can follow each step (~800ms per step or more).
+- **No implementation details in the UI.** Reducer/action/hook terminology,
+  hex IDs, and epoch timestamps never appear on screen.
+
+## Litmus test before shipping a demo
+
+Walk through it as a viewer: press each button once and read only what's on
+screen. If any label, log line, or animation needs backend knowledge to make
+sense, simplify it.

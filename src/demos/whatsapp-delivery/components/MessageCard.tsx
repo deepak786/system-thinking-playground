@@ -16,6 +16,8 @@ type MessageCardProps = {
    * duplicate elements.
    */
   layoutScope: string
+  /** Optional amber chip shown above the text (e.g. "Next out" in the queue). */
+  queueBadge?: string
 }
 
 const statusAccent: Record<Message['status'], string> = {
@@ -25,7 +27,12 @@ const statusAccent: Record<Message['status'], string> = {
 }
 
 /** Rounded chat bubble representing a single message plus its delivery ticks. */
-export function MessageCard({ message, compact = false, layoutScope }: MessageCardProps) {
+export function MessageCard({
+  message,
+  compact = false,
+  layoutScope,
+  queueBadge,
+}: MessageCardProps) {
   return (
     <motion.div
       layout
@@ -40,6 +47,11 @@ export function MessageCard({ message, compact = false, layoutScope }: MessageCa
         compact ? 'px-2.5 py-1.5' : 'px-3.5 py-2.5',
       )}
     >
+      {queueBadge && (
+        <span className="mb-1 inline-flex items-center rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-300 ring-1 ring-amber-500/30">
+          {queueBadge}
+        </span>
+      )}
       <p
         className={cn(
           'font-medium text-slate-100',
@@ -48,16 +60,26 @@ export function MessageCard({ message, compact = false, layoutScope }: MessageCa
       >
         {message.text}
       </p>
-      <div className="mt-1 flex items-center justify-end gap-1">
+      <div className="mt-1 flex items-center justify-between gap-2">
         <span
           className={cn(
-            'text-slate-400',
+            'font-mono text-slate-500',
             compact ? 'text-[9px]' : 'text-[10px]',
           )}
         >
-          {formatShort(message.timestamp)}
+          {message.id}
         </span>
-        <TickIcon status={message.status} />
+        <span className="flex items-center gap-1">
+          <span
+            className={cn(
+              'text-slate-400',
+              compact ? 'text-[9px]' : 'text-[10px]',
+            )}
+          >
+            {formatShort(message.timestamp)}
+          </span>
+          <TickIcon status={message.status} />
+        </span>
       </div>
     </motion.div>
   )

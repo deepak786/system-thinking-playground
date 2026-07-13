@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useReducer } from 'react'
+import { useCallback, useEffect, useMemo, useReducer } from 'react'
 import type {
   DeliveryState,
   LogEntry,
@@ -18,8 +18,16 @@ const SAMPLE_TEXTS = [
   'Sending the files now.',
 ]
 
-let idCounter = 0
-const nextId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${idCounter++}`
+/** Delay between each queued message being delivered once Alice is online. */
+const DRAIN_INTERVAL_MS = 800
+
+/**
+ * Counters live at module scope so IDs stay unique across resets.
+ * Message IDs are generated in the action creator (not the reducer) so the
+ * reducer stays pure and IDs remain sequential under StrictMode.
+ */
+let msgCounter = 0
+let logCounter = 0
 
 const initialState: DeliveryState = {
   aliceOnline: false,
@@ -30,15 +38,16 @@ const initialState: DeliveryState = {
 }
 
 type Action =
-  | { type: 'SEND' }
+  | { type: 'SEND'; id: string; timestamp: number }
   | { type: 'SET_ONLINE' }
+  | { type: 'DELIVER_NEXT' }
   | { type: 'SET_OFFLINE' }
   | { type: 'READ' }
   | { type: 'RESET' }
 
 function makeLog(kind: LogKind, message: string, messageId?: string): LogEntry {
   return {
-    id: nextId('log'),
+    id: `log-${logCounter++}`,
     timestamp: Date.now(),
     kind,
     message,
@@ -49,12 +58,13 @@ function makeLog(kind: LogKind, message: string, messageId?: string): LogEntry {
 function reducer(state: DeliveryState, action: Action): DeliveryState {
   switch (action.type) {
     case 'SEND': {
-      const text = SAMPLE_TEXTS[state.queue.length + state.delivered.length + state.read.length] ??
-        SAMPLE_TEXTS[Math.floor(Math.random() * SAMPLE_TEXTS.length)]
+      const count =
+        state.queue.length + state.delivered.length + state.read.length
+      const text = SAMPLE_TEXTS[count % SAMPLE_TEXTS.length]
       const base: Message = {
-        id: nextId('msg'),
+        id: action.id,
         text,
-        timestamp: Date.now(),
+        timestamp: action.timestamp,
         status: 'sent',
       }
 
@@ -66,39 +76,62 @@ function reducer(state: DeliveryState, action: Action): DeliveryState {
           delivered: [...state.delivered, delivered],
           log: [
             ...state.log,
-            makeLog('created', 'Message created by Deepak', base.id),
-            makeLog('delivered', 'Alice online → delivered instantly', base.id),
+            makeLog('created', `${base.id} created by Deepak`, base.id),
+            makeLog(
+              'delivered',
+              `${base.id} delivered instantly (Alice online)`,
+              base.id,
+            ),
           ],
         }
       }
 
-      // Recipient is offline: park the message in the pending queue.
+      // Recipient is offline: park the message at the back of the queue.
       return {
         ...state,
         queue: [...state.queue, base],
         log: [
           ...state.log,
-          makeLog('created', 'Message created by Deepak', base.id),
-          makeLog('queued', 'Alice offline → stored in server queue', base.id),
+          makeLog('created', `${base.id} created by Deepak`, base.id),
+          makeLog(
+            'queued',
+            `${base.id} joined the queue at position ${state.queue.length + 1}`,
+            base.id,
+          ),
         ],
       }
     }
 
     case 'SET_ONLINE': {
       if (state.aliceOnline) return state
-      const flushed = state.queue.map<Message>((m) => ({ ...m, status: 'delivered' }))
-      const deliveryLogs = flushed.map((m) =>
-        makeLog('delivered', 'Flushed from queue → delivered', m.id),
-      )
       return {
         ...state,
         aliceOnline: true,
-        queue: [],
-        delivered: [...state.delivered, ...flushed],
         log: [
           ...state.log,
-          makeLog('presence', 'Alice came online'),
-          ...deliveryLogs,
+          makeLog(
+            'presence',
+            state.queue.length > 0
+              ? `Alice came online → delivering ${state.queue.length} waiting ${state.queue.length === 1 ? 'message' : 'messages'}, oldest first`
+              : 'Alice came online',
+          ),
+        ],
+      }
+    }
+
+    // Pops the HEAD of the queue (oldest message) — this is what makes the
+    // drain first-in-first-out. Dispatched on a timer while Alice is online.
+    case 'DELIVER_NEXT': {
+      if (!state.aliceOnline || state.queue.length === 0) return state
+      const [head, ...rest] = state.queue
+      const delivered: Message = { ...head, status: 'delivered' }
+      return {
+        ...state,
+        queue: rest,
+        delivered: [...state.delivered, delivered],
+        log: [
+          ...state.log,
+          makeLog('delivered', `${head.id} delivered (first in → first out)`, head.id),
         ],
       }
     }
@@ -118,7 +151,9 @@ function reducer(state: DeliveryState, action: Action): DeliveryState {
     case 'READ': {
       if (state.delivered.length === 0) return state
       const nowRead = state.delivered.map<Message>((m) => ({ ...m, status: 'read' }))
-      const readLogs = nowRead.map((m) => makeLog('read', 'Alice read the message', m.id))
+      const readLogs = nowRead.map((m) =>
+        makeLog('read', `${m.id} read by Alice`, m.id),
+      )
       return {
         ...state,
         delivered: [],
@@ -130,7 +165,7 @@ function reducer(state: DeliveryState, action: Action): DeliveryState {
     case 'RESET':
       return {
         ...initialState,
-        log: [makeLog('reset', 'Simulation reset to initial state')],
+        log: [makeLog('reset', 'Everything cleared — starting fresh')],
       }
 
     default:
@@ -151,11 +186,28 @@ export type UseWhatsAppDelivery = {
 /**
  * Encapsulates the full delivery simulation. Components stay presentational and
  * simply call these actions; all transition logic lives in the reducer.
+ *
+ * When Alice is online and the queue is non-empty, an effect drains the queue
+ * one message at a time (every DRAIN_INTERVAL_MS) so viewers can watch the
+ * FIFO order play out. Going offline mid-drain cancels the timer and leaves
+ * the remaining messages queued.
  */
 export function useWhatsAppDelivery(): UseWhatsAppDelivery {
   const [state, dispatch] = useReducer(reducer, initialState)
 
-  const sendMessage = useCallback(() => dispatch({ type: 'SEND' }), [])
+  useEffect(() => {
+    if (!state.aliceOnline || state.queue.length === 0) return
+    const timer = setTimeout(
+      () => dispatch({ type: 'DELIVER_NEXT' }),
+      DRAIN_INTERVAL_MS,
+    )
+    return () => clearTimeout(timer)
+  }, [state.aliceOnline, state.queue.length])
+
+  const sendMessage = useCallback(
+    () => dispatch({ type: 'SEND', id: `msg-${++msgCounter}`, timestamp: Date.now() }),
+    [],
+  )
   const setAliceOnline = useCallback(() => dispatch({ type: 'SET_ONLINE' }), [])
   const setAliceOffline = useCallback(() => dispatch({ type: 'SET_OFFLINE' }), [])
   const readMessages = useCallback(() => dispatch({ type: 'READ' }), [])

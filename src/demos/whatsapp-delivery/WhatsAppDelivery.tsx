@@ -1,5 +1,6 @@
 import { CheckCheck, Eye } from 'lucide-react'
 import { useWhatsAppDelivery } from './hooks/useWhatsAppDelivery'
+import { LearningGoals } from './components/LearningGoals'
 import { FlowColumn } from './components/FlowColumn'
 import { MessageListPanel } from './components/MessageListPanel'
 import { EventLog } from './components/EventLog'
@@ -24,11 +25,13 @@ export function WhatsAppDelivery() {
 
   return (
     <div className="flex h-full flex-col gap-4">
+      <LearningGoals />
+
       {/* Demo header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-100 sm:text-2xl">
-            Offline Message Delivery
+            How WhatsApp Delivers Messages
           </h1>
           <p className="mt-0.5 max-w-2xl text-sm text-slate-400">
             Watch how a message travels from Deepak to the server, waits in a
@@ -40,7 +43,7 @@ export function WhatsAppDelivery() {
       </div>
 
       {/* Main workspace */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(280px,320px)_1fr_minmax(280px,360px)]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(330px,420px)_1fr_minmax(260px,330px)]">
         {/* Pipeline */}
         <div className="flex justify-center overflow-y-auto no-scrollbar rounded-2xl bg-slate-900/40 p-4 ring-1 ring-slate-800">
           <FlowColumn state={state} />
