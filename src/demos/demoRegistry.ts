@@ -1,9 +1,10 @@
-import { Gauge, MessageCircle, Network, Undo2 } from 'lucide-react'
+import { Gauge, MessageCircle, Network, Undo2, Zap } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
 import { ApiRateLimiter } from './api-rate-limiter/ApiRateLimiter'
 import { UndoRedo } from './undo-redo/UndoRedo'
+import { LruCache } from './lru-cache/LruCache'
 
 /**
  * The single source of truth for every demo in the playground.
@@ -58,5 +59,17 @@ export const demoRegistry: DemoDefinition[] = [
     icon: Undo2,
     accentClass: 'text-violet-400',
     component: UndoRedo,
+  },
+  {
+    id: 'lru-cache',
+    title: 'Why Apps Load Faster: The LRU Cache',
+    description: 'Cache hits, misses & LRU eviction',
+    difficulty: 'Beginner',
+    concepts: ['Cache', 'Hit vs Miss', 'LRU Eviction', 'Memory vs Disk'],
+    metaDescription:
+      'Interactive visualization of an LRU cache: cached profiles open instantly, misses take a slow database trip, and the least recently used item is evicted when the cache is full.',
+    icon: Zap,
+    accentClass: 'text-emerald-400',
+    component: LruCache,
   },
 ]
