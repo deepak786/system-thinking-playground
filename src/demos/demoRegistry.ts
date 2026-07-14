@@ -1,7 +1,8 @@
-import { MessageCircle, Network } from 'lucide-react'
+import { Gauge, MessageCircle, Network } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
+import { ApiRateLimiter } from './api-rate-limiter/ApiRateLimiter'
 
 /**
  * The single source of truth for every demo in the playground.
@@ -32,5 +33,17 @@ export const demoRegistry: DemoDefinition[] = [
     icon: Network,
     accentClass: 'text-sky-400',
     component: LinkedInConnections,
+  },
+  {
+    id: 'api-rate-limiter',
+    title: 'How APIs Prevent Abuse',
+    description: 'Rate limits, time windows & 429 errors',
+    difficulty: 'Beginner',
+    concepts: ['Rate Limiting', 'Time Windows', '429 Errors', 'Per-User Counters'],
+    metaDescription:
+      'Interactive visualization of API rate limiting: the server counts each user\u2019s requests inside a time window and answers 429 Too Many Requests once the limit is hit.',
+    icon: Gauge,
+    accentClass: 'text-rose-400',
+    component: ApiRateLimiter,
   },
 ]
