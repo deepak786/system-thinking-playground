@@ -7,9 +7,13 @@ import { MessageListPanel } from './components/MessageListPanel'
 import { EventLog } from './components/EventLog'
 import { ControlBar } from './components/ControlBar'
 import { StatusBadge } from '../../shared/StatusBadge'
+import { WatchOnYouTube } from '../../shared/WatchOnYouTube'
 import { Tour } from '../../shared/tour/Tour'
 import { TourButton } from '../../shared/tour/TourButton'
 import { useTour } from '../../shared/tour/useTour'
+
+/** Companion explainer video for this demo. */
+const VIDEO_URL = 'https://www.youtube.com/watch?v=G_ECbKeIuSI'
 
 /**
  * Educational visualization of how WhatsApp delivers messages when the
@@ -49,6 +53,7 @@ export function WhatsAppDelivery() {
           <span data-tour="status">
             <StatusBadge online={state.aliceOnline} label="Alice:" />
           </span>
+          <WatchOnYouTube href={VIDEO_URL} />
           <TourButton onClick={tour.start} />
         </div>
       </div>
