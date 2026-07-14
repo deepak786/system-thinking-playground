@@ -19,6 +19,11 @@ first — the moment the recipient reconnects.
 Every action appends a plain-language entry to the **Event Log**
 (e.g. `msg-3 delivered (first in → first out)`).
 
+First-time visitors get a 7-step **onboarding tour** that spotlights each
+area (pipeline, queue, status badge, panels, log, controls) before they
+start. It can be replayed anytime with the **Tour** button in the header;
+"seen" is remembered per demo in localStorage.
+
 ## What's on screen
 
 - **Center pipeline** — Deepak's phone → WhatsApp Server → Pending Queue →

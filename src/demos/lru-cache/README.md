@@ -20,6 +20,11 @@ Suggested walkthrough (the video's exact storyline, cache size 3): open
 A, B, C (three slow fetches) → open **A** again (instant, slides to most
 recent: `B C A`) → open **D** → watch **B** get evicted (`C A D`).
 
+First-time visitors get a 6-step **onboarding tour** that spotlights each
+area (profiles, cache, database, story log, controls). It can be replayed
+anytime with the **Tour** button in the header; "seen" is remembered per demo
+in localStorage.
+
 ## What's on screen
 
 - **Open a Profile** — five profile buttons; a ⚡ badge marks the ones

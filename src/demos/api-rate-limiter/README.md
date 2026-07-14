@@ -21,6 +21,10 @@ Suggested walkthrough: spam **Send Request** as Deepak until you get 429s,
 then send one as Alice — hers is allowed, because counters are **per user**.
 Then wait for Deepak's window bar to run out and send again: fresh count.
 
+First-time visitors get a 5-step **onboarding tour** that spotlights each
+area (users, server memory, log, rules). It can be replayed anytime with the
+**Tour** button in the header; "seen" is remembered per demo in localStorage.
+
 ## What's on screen
 
 - **Two user cards** — Deepak and Alice, each with a send button and their

@@ -1,0 +1,45 @@
+---
+description: Every demo must ship with an onboarding tour using the shared tour system
+globs: src/demos/**
+alwaysApply: false
+---
+
+# Demo Onboarding Tour
+
+Every demo MUST include an onboarding tour built on the shared tour system in
+`src/shared/tour/` (`Tour`, `TourButton`, `useTour`). It auto-opens on a
+visitor's first view of that demo (tracked in `localStorage` per demo id) and
+can be replayed anytime via the header Tour button.
+
+## How to add one (follow any existing demo, e.g. `whatsapp-delivery`)
+
+1. Create `src/demos/<demo>/tourSteps.ts` exporting `TOUR_STEPS: TourStep[]`.
+   - First step: a centered welcome card (no `target`) saying what the demo
+     teaches in one sentence.
+   - Middle steps: one per major UI region, in reading order.
+   - Last step: the controls, ending with a nudge to try something specific.
+   - 5–7 steps total. Bodies are 1–2 plain-language sentences (same simplicity
+     bar as the rest of the demo).
+2. Tag each step's target element with `data-tour="<name>"`. Put the attribute
+   on the region's wrapper div in the top-level component, or on a component's
+   root `Card` (Card spreads extra props).
+3. In the top-level demo component:
+
+```tsx
+const tour = useTour('<demo-id>') // must equal the registry id
+
+<Tour steps={TOUR_STEPS} open={tour.open} onClose={tour.close} />
+// in the header, next to WatchOnYouTube:
+<TourButton onClick={tour.start} />
+```
+
+4. Mention the tour in the demo's README.
+
+## Conventions
+
+- The `useTour` id must match the demo's `demoRegistry.ts` id — it namespaces
+  the `tour-seen:<id>` localStorage key.
+- Reuse common anchor names where they exist: `log` for the event log,
+  `controls` for the control bar.
+- Never build a bespoke overlay; extend `src/shared/tour/` if a demo needs
+  something the shared system lacks.

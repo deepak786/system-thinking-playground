@@ -19,6 +19,11 @@ Connection Levels / Shortest Path
 Every step appends a plain-language line to the **Search Story**
 (e.g. `Emma found through Alice → 2nd connection`).
 
+First-time visitors get a 6-step **onboarding tour** that spotlights each
+area (graph, checking line, levels, story log, controls). It can be replayed
+anytime with the **Tour** button in the header; "seen" is remembered per demo
+in localStorage.
+
 ## What's on screen
 
 - **Network graph** — 11 people connected by friendships. Unknown people are

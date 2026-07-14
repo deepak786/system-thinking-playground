@@ -21,6 +21,11 @@ Suggested walkthrough (the video's exact storyline): type twice → undo →
 look at both stacks → redo → undo again → **type something new** and watch
 the Redo Stack get wiped.
 
+First-time visitors get a 6-step **onboarding tour** that spotlights each
+area (editor, both stacks, story log, controls). It can be replayed anytime
+with the **Tour** button in the header; "seen" is remembered per demo in
+localStorage.
+
 ## What's on screen
 
 - **Text Editor** — the current text with a blinking cursor; it is always

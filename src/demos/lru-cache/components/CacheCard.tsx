@@ -19,7 +19,7 @@ export function CacheCard({ state }: CacheCardProps) {
   const emptySlots = Math.max(0, state.capacity - state.cache.length)
 
   return (
-    <Card accent="brand" className="px-4 py-3">
+    <Card data-tour="cache" accent="brand" className="px-4 py-3">
       <div className="mb-1 flex items-center gap-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-500/15 text-brand-300 ring-1 ring-brand-500/30">
           <Zap className="h-4 w-4" />

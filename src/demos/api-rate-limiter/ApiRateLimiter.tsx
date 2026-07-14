@@ -1,5 +1,9 @@
 import { useRateLimiter } from './hooks/useRateLimiter'
 import { CLIENTS } from './data'
+import { TOUR_STEPS } from './tourSteps'
+import { Tour } from '../../shared/tour/Tour'
+import { TourButton } from '../../shared/tour/TourButton'
+import { useTour } from '../../shared/tour/useTour'
 import { LearningGoals } from './components/LearningGoals'
 import { ClientCard } from './components/ClientCard'
 import { ServerCard } from './components/ServerCard'
@@ -18,9 +22,11 @@ const VIDEO_URL = 'https://www.youtube.com/watch?v=erGIBW5lI-s'
 export function ApiRateLimiter() {
   const { state, now, sendRequest, setLimit, setWindowMs, reset } =
     useRateLimiter()
+  const tour = useTour('api-rate-limiter')
 
   return (
     <div className="flex min-h-full flex-col gap-4">
+      <Tour steps={TOUR_STEPS} open={tour.open} onClose={tour.close} />
       <LearningGoals />
 
       {/* Demo header */}
@@ -39,14 +45,17 @@ export function ApiRateLimiter() {
             <span className="font-semibold text-slate-300">rate limiting</span>.
           </p>
         </div>
-        <WatchOnYouTube href={VIDEO_URL} />
+        <div className="flex items-center gap-2">
+          <WatchOnYouTube href={VIDEO_URL} />
+          <TourButton onClick={tour.start} />
+        </div>
       </div>
 
       {/* Main workspace */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_minmax(300px,360px)]">
         <div className="flex flex-col gap-4">
           {/* The two users */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div data-tour="clients" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {CLIENTS.map((client) => (
               <ClientCard
                 key={client.id}
@@ -63,7 +72,7 @@ export function ApiRateLimiter() {
         </div>
 
         {/* Server log: bounded so a long log scrolls inside the card */}
-        <div className="relative h-[300px] xl:h-auto xl:min-h-[260px]">
+        <div data-tour="log" className="relative h-[300px] xl:h-auto xl:min-h-[260px]">
           <div className="absolute inset-0">
             <EventLog log={state.log} />
           </div>
@@ -71,7 +80,10 @@ export function ApiRateLimiter() {
       </div>
 
       {/* Rule controls */}
-      <div className="rounded-2xl bg-slate-900/60 p-3 ring-1 ring-slate-800">
+      <div
+        data-tour="rules"
+        className="rounded-2xl bg-slate-900/60 p-3 ring-1 ring-slate-800"
+      >
         <RuleBar
           limit={state.limit}
           windowMs={state.windowMs}

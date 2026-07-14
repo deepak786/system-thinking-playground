@@ -15,7 +15,7 @@ type DatabaseCardProps = {
  */
 export function DatabaseCard({ state }: DatabaseCardProps) {
   return (
-    <Card className="px-4 py-3">
+    <Card data-tour="database" className="px-4 py-3">
       <div className="mb-1 flex items-center gap-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30">
           <Database className="h-4 w-4" />

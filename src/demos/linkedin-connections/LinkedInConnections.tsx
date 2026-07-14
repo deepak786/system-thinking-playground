@@ -1,5 +1,9 @@
 import { useConnectionSearch } from './hooks/useConnectionSearch'
+import { TOUR_STEPS } from './tourSteps'
 import { WatchOnYouTube } from '../../shared/WatchOnYouTube'
+import { Tour } from '../../shared/tour/Tour'
+import { TourButton } from '../../shared/tour/TourButton'
+import { useTour } from '../../shared/tour/useTour'
 import { LearningGoals } from './components/LearningGoals'
 import { NetworkGraph } from './components/NetworkGraph'
 import { QueuePanel } from './components/QueuePanel'
@@ -20,9 +24,11 @@ const VIDEO_URL = 'https://www.youtube.com/watch?v=I0u9bU08PUs'
 export function LinkedInConnections() {
   const { state, selectedPath, stepOnce, play, pause, selectPerson, reset } =
     useConnectionSearch()
+  const tour = useTour('linkedin-connections')
 
   return (
     <div className="flex min-h-full flex-col gap-4">
+      <Tour steps={TOUR_STEPS} open={tour.open} onClose={tour.close} />
       <LearningGoals />
 
       {/* Demo header */}
@@ -41,14 +47,20 @@ export function LinkedInConnections() {
             .
           </p>
         </div>
-        <WatchOnYouTube href={VIDEO_URL} />
+        <div className="flex items-center gap-2">
+          <WatchOnYouTube href={VIDEO_URL} />
+          <TourButton onClick={tour.start} />
+        </div>
       </div>
 
       {/* Main workspace: graph beside the panels on wide screens (xl+),
           stacked on top of them otherwise so the graph never gets cramped. */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_minmax(300px,360px)]">
         {/* Graph + shortest path */}
-        <div className="flex flex-col gap-3 rounded-2xl bg-slate-900/40 p-4 ring-1 ring-slate-800">
+        <div
+          data-tour="graph"
+          className="flex flex-col gap-3 rounded-2xl bg-slate-900/40 p-4 ring-1 ring-slate-800"
+        >
           <div className="mx-auto w-full max-w-[760px]">
             <NetworkGraph
               state={state}
@@ -65,7 +77,10 @@ export function LinkedInConnections() {
             stretching the page. */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:flex xl:flex-col">
           <LevelsPanel state={state} onSelect={selectPerson} />
-          <div className="relative h-[300px] md:h-auto md:min-h-[260px] xl:min-h-[260px] xl:flex-1">
+          <div
+            data-tour="log"
+            className="relative h-[300px] md:h-auto md:min-h-[260px] xl:min-h-[260px] xl:flex-1"
+          >
             <div className="absolute inset-0">
               <EventLog log={state.log} />
             </div>
@@ -77,7 +92,10 @@ export function LinkedInConnections() {
       <QueuePanel state={state} />
 
       {/* Controls */}
-      <div className="rounded-2xl bg-slate-900/60 p-3 ring-1 ring-slate-800">
+      <div
+        data-tour="controls"
+        className="rounded-2xl bg-slate-900/60 p-3 ring-1 ring-slate-800"
+      >
         <ControlBar
           auto={state.auto}
           done={state.done}

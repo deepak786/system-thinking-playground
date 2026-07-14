@@ -11,7 +11,7 @@ type QueueCardProps = {
 /** The pending queue: where messages wait, in FIFO order, while offline. */
 export function QueueCard({ queue }: QueueCardProps) {
   return (
-    <Card accent="amber" className="w-full max-w-[300px] px-4 py-3.5">
+    <Card accent="amber" data-tour="queue" className="w-full max-w-[300px] px-4 py-3.5">
       <div className="mb-2 flex items-center gap-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40">
           <Inbox className="h-5 w-5" />

@@ -12,7 +12,7 @@ type EditorCardProps = {
  */
 export function EditorCard({ text }: EditorCardProps) {
   return (
-    <Card accent="violet" className="px-4 py-3">
+    <Card data-tour="editor" accent="violet" className="px-4 py-3">
       <div className="mb-2 flex items-center gap-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300 ring-1 ring-violet-500/30">
           <FileText className="h-4 w-4" />

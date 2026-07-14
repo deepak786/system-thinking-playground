@@ -32,6 +32,7 @@ src/
   components/            # app shell (Layout with sidebar + routed outlet)
   pages/                 # Home page (demo cards)
   shared/                # cross-demo UI (Button, Card, Phone, StatusBadge, WatchOnYouTube)
+    tour/                # onboarding: spotlight Tour, useTour (auto-start once), TourButton
   lib/                   # tiny utilities (cn, time formatting)
   demos/
     types.ts             # DemoDefinition contract
@@ -40,6 +41,7 @@ src/
       README.md          # per-demo docs (usage + implementation notes)
       <Demo>.tsx         # top-level component (layout only)
       types.ts           # demo-specific models
+      tourSteps.ts       # onboarding tour steps (auto-opens on first visit)
       hooks/             # demo state (custom hook, usually a reducer)
       components/        # small presentational pieces
   App.tsx                # React Router routes, generated from the registry
@@ -55,8 +57,13 @@ generated from `demoRegistry.ts` — nothing is hardcoded.
    custom hook, UI in small presentational components).
 2. Write a short `README.md` in the demo folder: what it teaches, the
    controls, and any implementation notes.
-3. Add one entry to `src/demos/demoRegistry.ts` (id, title, description,
+3. Add an onboarding tour (required for every demo): define steps in
+   `tourSteps.ts`, tag the target regions with `data-tour` attributes, and
+   wire up `useTour(<demo-id>)` + `<Tour>` + a header `<TourButton>` — see
+   any existing demo for the pattern. It auto-opens on first visit and can
+   be replayed from the header.
+4. Add one entry to `src/demos/demoRegistry.ts` (id, title, description,
    difficulty, concepts, icon, component). The `id` becomes the URL.
-4. Link the README in the Demos table above.
+5. Link the README in the Demos table above.
 
 The route, sidebar entry, and Home card all appear automatically.

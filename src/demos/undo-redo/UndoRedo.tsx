@@ -1,4 +1,8 @@
 import { useUndoRedo } from './hooks/useUndoRedo'
+import { TOUR_STEPS } from './tourSteps'
+import { Tour } from '../../shared/tour/Tour'
+import { TourButton } from '../../shared/tour/TourButton'
+import { useTour } from '../../shared/tour/useTour'
 import { LearningGoals } from './components/LearningGoals'
 import { EditorCard } from './components/EditorCard'
 import { StackColumn } from './components/StackColumn'
@@ -18,9 +22,11 @@ const VIDEO_URL = 'https://www.youtube.com/watch?v=y4LWg8uVkqI'
 export function UndoRedo() {
   const { state, currentText, canUndo, canRedo, typeWord, undo, redo, reset } =
     useUndoRedo()
+  const tour = useTour('undo-redo')
 
   return (
     <div className="flex min-h-full flex-col gap-4">
+      <Tour steps={TOUR_STEPS} open={tour.open} onClose={tour.close} />
       <LearningGoals />
 
       {/* Demo header */}
@@ -37,7 +43,10 @@ export function UndoRedo() {
             and typing something new throws the Redo Stack away.
           </p>
         </div>
-        <WatchOnYouTube href={VIDEO_URL} />
+        <div className="flex items-center gap-2">
+          <WatchOnYouTube href={VIDEO_URL} />
+          <TourButton onClick={tour.start} />
+        </div>
       </div>
 
       {/* Main workspace */}
@@ -61,7 +70,7 @@ export function UndoRedo() {
         </div>
 
         {/* Story log: bounded so a long log scrolls inside the card */}
-        <div className="relative h-[300px] xl:h-auto xl:min-h-[260px]">
+        <div data-tour="log" className="relative h-[300px] xl:h-auto xl:min-h-[260px]">
           <div className="absolute inset-0">
             <EventLog log={state.log} />
           </div>
@@ -69,7 +78,10 @@ export function UndoRedo() {
       </div>
 
       {/* Controls */}
-      <div className="rounded-2xl bg-slate-900/60 p-3 ring-1 ring-slate-800">
+      <div
+        data-tour="controls"
+        className="rounded-2xl bg-slate-900/60 p-3 ring-1 ring-slate-800"
+      >
         <ControlBar
           canUndo={canUndo}
           canRedo={canRedo}
