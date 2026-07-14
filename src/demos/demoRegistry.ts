@@ -1,8 +1,9 @@
-import { Gauge, MessageCircle, Network } from 'lucide-react'
+import { Gauge, MessageCircle, Network, Undo2 } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
 import { ApiRateLimiter } from './api-rate-limiter/ApiRateLimiter'
+import { UndoRedo } from './undo-redo/UndoRedo'
 
 /**
  * The single source of truth for every demo in the playground.
@@ -45,5 +46,17 @@ export const demoRegistry: DemoDefinition[] = [
     icon: Gauge,
     accentClass: 'text-rose-400',
     component: ApiRateLimiter,
+  },
+  {
+    id: 'undo-redo',
+    title: 'How Ctrl+Z Really Works',
+    description: 'Undo & redo with two stacks',
+    difficulty: 'Beginner',
+    concepts: ['Stack', 'Undo/Redo', 'State History', 'LIFO'],
+    metaDescription:
+      'Interactive visualization of undo/redo: every edit is saved on an undo stack, Ctrl+Z moves the top state to the redo stack, and new edits clear the redo stack.',
+    icon: Undo2,
+    accentClass: 'text-violet-400',
+    component: UndoRedo,
   },
 ]

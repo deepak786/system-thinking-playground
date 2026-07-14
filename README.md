@@ -22,6 +22,7 @@ covering what it teaches, how to use it, and implementation notes.
 | How WhatsApp Delivers Messages | Queue · FIFO · Message IDs · Message Delivery | [README](src/demos/whatsapp-delivery/README.md) |
 | How LinkedIn Finds Your Connection Level | Graph · BFS · Queue · Shortest Path | [README](src/demos/linkedin-connections/README.md) |
 | How APIs Prevent Abuse | Rate Limiting · Time Windows · 429 Errors | [README](src/demos/api-rate-limiter/README.md) |
+| How Ctrl+Z Really Works | Stack · Undo/Redo · State History · LIFO | [README](src/demos/undo-redo/README.md) |
 
 ## Architecture
 
