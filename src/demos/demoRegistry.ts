@@ -1,10 +1,11 @@
-import { Gauge, MessageCircle, Network, Undo2, Zap } from 'lucide-react'
+import { FileSearch, Gauge, MessageCircle, Network, Undo2, Zap } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
 import { ApiRateLimiter } from './api-rate-limiter/ApiRateLimiter'
 import { UndoRedo } from './undo-redo/UndoRedo'
 import { LruCache } from './lru-cache/LruCache'
+import { ChatGptPdf } from './chatgpt-pdf/ChatGptPdf'
 
 /**
  * The single source of truth for every demo in the playground.
@@ -71,5 +72,17 @@ export const demoRegistry: DemoDefinition[] = [
     icon: Zap,
     accentClass: 'text-emerald-400',
     component: LruCache,
+  },
+  {
+    id: 'chatgpt-pdf',
+    title: 'How ChatGPT Answers Questions About Your PDF',
+    description: 'Behind the scenes of document Q&A',
+    difficulty: 'Beginner',
+    concepts: ['RAG', 'Chunking', 'Search', 'Context'],
+    metaDescription:
+      'Interactive walkthrough of how ChatGPT answers questions about a document: see how a PDF is split, searched, and used to write the answer, one guided step at a time.',
+    icon: FileSearch,
+    accentClass: 'text-blue-400',
+    component: ChatGptPdf,
   },
 ]
