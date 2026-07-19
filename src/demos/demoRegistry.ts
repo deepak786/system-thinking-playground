@@ -1,4 +1,4 @@
-import { FileSearch, Gauge, MessageCircle, Network, Scissors, Undo2, Zap } from 'lucide-react'
+import { FileSearch, Gauge, MessageCircle, Network, Scissors, SearchCheck, Undo2, Zap } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
@@ -7,6 +7,7 @@ import { UndoRedo } from './undo-redo/UndoRedo'
 import { LruCache } from './lru-cache/LruCache'
 import { ChatGptPdf } from './chatgpt-pdf/ChatGptPdf'
 import { PdfChunking } from './pdf-chunking/PdfChunking'
+import { PdfRetrieval } from './pdf-retrieval/PdfRetrieval'
 
 /**
  * The single source of truth for every demo in the playground.
@@ -97,5 +98,17 @@ export const demoRegistry: DemoDefinition[] = [
     icon: Scissors,
     accentClass: 'text-cyan-400',
     component: PdfChunking,
+  },
+  {
+    id: 'pdf-retrieval',
+    title: 'How AI Finds the Right Information in Your PDF',
+    description: 'How AI picks the few chunks that matter',
+    difficulty: 'Beginner',
+    concepts: ['Search', 'Relevance', 'Ranking', 'Context'],
+    metaDescription:
+      'Interactive visualization of how AI finds the right information in a PDF: watch one question check twenty chunks, rank the closest matches, and send only the top three forward.',
+    icon: SearchCheck,
+    accentClass: 'text-teal-400',
+    component: PdfRetrieval,
   },
 ]
