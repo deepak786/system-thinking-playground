@@ -6,6 +6,7 @@ import { cn } from '../../lib/cn'
 import { demoPathById } from '../paths'
 import { EASE_OUT, staggerContainer } from './animations'
 import {
+  DEFAULT_OVERLAP,
   JUST_RIGHT_LEVEL,
   PDF_PAGES,
   SIZE_LEVELS,
@@ -17,20 +18,22 @@ import { PDFCard } from './components/PDFCard'
 import { QuestionBadge } from './components/QuestionBadge'
 import { ChunkCanvas, type CanvasStage } from './components/ChunkCanvas'
 import { SizeSlider } from './components/SizeSlider'
+import { OverlapSlider } from './components/OverlapSlider'
+import { OverlapPreview } from './components/OverlapPreview'
+import { OverlapMetrics } from './components/OverlapMetrics'
 import { NavigationFooter } from './components/NavigationFooter'
 
 /**
  * Interactive walkthrough of why AI splits PDFs into chunks — the second
  * episode of the "How AI Works" series. Hands-on rather than cinematic:
- * the viewer clicks Split PDF (scan → slice → break apart), drags a
- * chunk-size slider and watches the trade-off live while one section
- * ("Vacation Policy") stays tracked across sizes, then predicts which
- * chunks matter before revealing the answer — the hook for the next video.
+ * the viewer clicks Split PDF, drags a chunk-size slider, then configures
+ * chunk overlap and watches shared context appear between neighbors,
+ * before predicting which chunks matter — the hook for the next video.
  *
  * One continuous canvas rather than separate slides: the same tiles morph
- * through every stage via shared layoutIds.
+ * through every stage via shared layoutIds (overlap uses its own preview).
  */
-type Stage = 'intro' | 'scan' | 'slice' | 'split' | 'size' | 'relevant'
+type Stage = 'intro' | 'scan' | 'slice' | 'split' | 'size' | 'overlap' | 'relevant'
 
 const HEADERS: Record<
   Stage,
@@ -66,8 +69,14 @@ const HEADERS: Record<
     title: 'Choosing the right chunk size',
     subtitle: 'Drag the slider and watch the trade-off.',
   },
-  relevant: {
+  overlap: {
     step: 4,
+    name: 'Overlap',
+    title: 'Configure Chunk Overlap',
+    subtitle: 'How much text should neighboring chunks share?',
+  },
+  relevant: {
+    step: 5,
     name: 'Search',
     title: 'Most chunks are ignored',
     subtitle: 'AI never reads them all — so which ones matter?',
@@ -76,7 +85,7 @@ const HEADERS: Record<
 
 /** After the reveal settles, the headline itself becomes the cliffhanger. */
 const ENDING_HEADER = {
-  step: 4,
+  step: 5,
   name: 'Search',
   title: 'How does AI know which chunks are relevant?',
   subtitle: 'We\u2019ll answer that in the next video.',
@@ -91,6 +100,7 @@ const VERDICT_STYLE: Record<Verdict, string> = {
 export function PdfChunking() {
   const [stage, setStage] = useState<Stage>('intro')
   const [level, setLevel] = useState(JUST_RIGHT_LEVEL)
+  const [overlap, setOverlap] = useState(DEFAULT_OVERLAP)
   const [hasExplored, setHasExplored] = useState(false)
   const [answerRevealed, setAnswerRevealed] = useState(false)
   const [showPrompt, setShowPrompt] = useState(false)
@@ -164,10 +174,12 @@ export function PdfChunking() {
         : 'chunks'
   const lvl = SIZE_LEVELS[level]
   const header = endingQuestion ? ENDING_HEADER : HEADERS[stage]
+  const showChunkGrid = stage !== 'overlap'
 
   const restart = () => {
     setStage('intro')
     setLevel(JUST_RIGHT_LEVEL)
+    setOverlap(DEFAULT_OVERLAP)
     setHasExplored(false)
     setAnswerRevealed(false)
   }
@@ -212,18 +224,42 @@ export function PdfChunking() {
             </AnimatePresence>
           </div>
 
-          {/* The canvas: one set of tiles, morphing through every stage. */}
+          {/* The canvas: chunk grid for most stages; overlap uses its own
+              two-card preview so shared text can be highlighted clearly. */}
           <div className="flex min-h-[210px] items-start justify-center">
-            <ChunkCanvas
-              stage={canvasStage}
-              level={level}
-              answerRevealed={answerRevealed}
-              introFlash={stage === 'intro' && introBeat === 2}
-            />
+            <AnimatePresence mode="wait">
+              {showChunkGrid ? (
+                <motion.div
+                  key="chunk-grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                  className="flex w-full justify-center"
+                >
+                  <ChunkCanvas
+                    stage={canvasStage}
+                    level={level}
+                    answerRevealed={answerRevealed}
+                    introFlash={stage === 'intro' && introBeat === 2}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="overlap-preview"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.45, ease: EASE_OUT }}
+                  className="flex w-full flex-col items-center gap-4"
+                >
+                  <OverlapPreview overlap={overlap} />
+                  <OverlapMetrics overlap={overlap} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* The slider — the demo's hero control, right under the grid it
-              drives. Space is reserved only around the stages that use it. */}
+          {/* Size slider — reserved while split settles into size. */}
           {(stage === 'split' || stage === 'size') && (
             <div className="mt-[clamp(10px,2vh,16px)] flex min-h-[76px] justify-center">
               <AnimatePresence>
@@ -245,6 +281,20 @@ export function PdfChunking() {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+          )}
+
+          {/* Overlap slider — sits under the two-chunk preview. */}
+          {stage === 'overlap' && (
+            <div className="mt-[clamp(10px,2vh,16px)] flex min-h-[120px] justify-center">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.15 }}
+                className="flex w-full justify-center"
+              >
+                <OverlapSlider value={overlap} onChange={setOverlap} />
+              </motion.div>
             </div>
           )}
 
@@ -366,6 +416,24 @@ export function PdfChunking() {
                 </motion.div>
               )}
 
+              {stage === 'overlap' && (
+                <motion.p
+                  key="overlap-explain"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.2 }}
+                  className="max-w-[54ch] text-balance rounded-2xl border border-black/[0.06] bg-white/80 px-5 py-3.5 text-center text-[13px] leading-relaxed text-[#6e6e73] shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
+                >
+                  Documents often contain sentences that span across chunk
+                  boundaries. Without overlap, important context may be split
+                  between two chunks. Overlapping adjacent chunks helps
+                  preserve context and improves retrieval quality, although it
+                  increases the number of chunks that must be stored and
+                  searched.
+                </motion.p>
+              )}
+
               {stage === 'relevant' && showPrompt && !answerRevealed && (
                 <motion.div
                   key="predict"
@@ -407,8 +475,6 @@ export function PdfChunking() {
                       only 3 searched
                     </span>
                   </motion.p>
-                  {/* The curiosity beat lives in the headline (ENDING_HEADER),
-                      which swaps in ~2.6 s after the reveal. */}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -429,8 +495,16 @@ export function PdfChunking() {
               label="Continue"
               onNext={() => {
                 setLevel(JUST_RIGHT_LEVEL)
-                setStage('relevant')
+                setStage('overlap')
               }}
+            />
+          )}
+
+          {stage === 'overlap' && (
+            <NavigationFooter
+              visible
+              label="Continue"
+              onNext={() => setStage('relevant')}
             />
           )}
 

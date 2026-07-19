@@ -6,7 +6,7 @@ export const PDF_NAME = 'Employee Handbook'
 export const PDF_PAGES = 320
 export const QUESTION = 'How many vacation days do employees get?'
 
-export const TOTAL_STEPS = 4
+export const TOTAL_STEPS = 5
 
 /** How many stacked rows the un-split PDF block is drawn with. */
 export const INTRO_ROWS = 8
@@ -128,3 +128,92 @@ export const RELEVANT_TILE_INDEXES = new Set([0, 4, 9])
  */
 export const FRAGMENTS_SMALL = ['\u2026vacation\u2026', '\u2026days\u2026']
 export const FRAGMENTS_TINY = ['\u202620\u2026', '\u2026days\u2026', '\u2026per\u2026', '\u2026year\u2026']
+
+/** Fixed demo chunk size used in the overlap-step metrics. */
+export const DEMO_CHUNK_SIZE_CHARS = 500
+
+/** Default overlap on the dedicated overlap step (0–50%). */
+export const DEFAULT_OVERLAP = 20
+
+/**
+ * Continuous handbook prose used by the overlap visualization. Word order
+ * is what the two neighboring chunks share (or don't) as the slider moves.
+ */
+export const OVERLAP_TEXT =
+  'Employees receive 20 vacation days each year. Unused vacation may carry over to the next year. Manager approval is required for longer leave.'
+
+export const OVERLAP_WORDS = OVERLAP_TEXT.split(/\s+/)
+
+export type StorageLevel = 'Low' | 'Medium' | 'High'
+export type ContextLevel = 'Weak' | 'Fair' | 'Good' | 'Excellent'
+
+export type OverlapMetrics = {
+  chunkSize: number
+  overlap: number
+  estimatedChunks: number
+  storage: StorageLevel
+  context: ContextLevel
+}
+
+/**
+ * Educational (approximate) metrics for the overlap step. Higher overlap
+ * means more duplicate text stored → more chunks and better context.
+ */
+export function metricsForOverlap(overlap: number): OverlapMetrics {
+  const clamped = Math.max(0, Math.min(50, overlap))
+  // At 0% ≈ 12 chunks; at 20% ≈ 18; at 50% ≈ 27.
+  const estimatedChunks = Math.round(12 + (clamped / 50) * 15)
+
+  const storage: StorageLevel =
+    clamped <= 10 ? 'Low' : clamped <= 30 ? 'Medium' : 'High'
+
+  const context: ContextLevel =
+    clamped === 0
+      ? 'Weak'
+      : clamped <= 15
+        ? 'Fair'
+        : clamped <= 35
+          ? 'Good'
+          : 'Excellent'
+
+  return {
+    chunkSize: DEMO_CHUNK_SIZE_CHARS,
+    overlap: clamped,
+    estimatedChunks,
+    storage,
+    context,
+  }
+}
+
+/**
+ * Split the sample prose into chunk-1-only / shared / chunk-2-only based
+ * on overlap %. Shared words are empty at 0% and grow as the slider rises.
+ */
+export function splitForOverlap(overlap: number): {
+  prefix: string[]
+  shared: string[]
+  suffix: string[]
+} {
+  const words = OVERLAP_WORDS
+  const mid = Math.floor(words.length / 2)
+  // Cap shared words so both unique sides still read as complete thoughts.
+  const maxShared = Math.floor(words.length * 0.45)
+  const sharedCount = Math.round((Math.max(0, Math.min(50, overlap)) / 50) * maxShared)
+
+  if (sharedCount === 0) {
+    return {
+      prefix: words.slice(0, mid),
+      shared: [],
+      suffix: words.slice(mid),
+    }
+  }
+
+  const sharedStart = Math.max(0, mid - Math.floor(sharedCount / 2))
+  const sharedEnd = Math.min(words.length, sharedStart + sharedCount)
+
+  return {
+    prefix: words.slice(0, sharedStart),
+    shared: words.slice(sharedStart, sharedEnd),
+    suffix: words.slice(sharedEnd),
+  }
+}

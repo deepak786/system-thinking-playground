@@ -10,7 +10,7 @@ Where episode one is cinematic (watch, then click Next), this one is
 **hands-on**: the viewer performs the split and explores the chunk-size
 trade-off themselves.
 
-## The four named steps (one continuous canvas)
+## The five named steps (one continuous canvas)
 
 1. **Problem — "One question, one huge PDF"** — a tension build: the
    Employee Handbook appears as a real document (rows carry readable
@@ -31,7 +31,14 @@ trade-off themselves.
    ("…vacation…", "…20…", "…days…"). The **Vacation Policy content stays
    highlighted at every stop** — same information, different sizes.
    Continue unlocks after the viewer has actually dragged.
-4. **Search — "Most chunks are ignored"** — predict-then-reveal: the
+4. **Overlap — "Configure Chunk Overlap"** — a 0–50% slider (default 20%)
+   beside two neighboring chunk cards drawn from handbook prose. Shared
+   words highlight in soft blue and grow/shrink live with the slider;
+   at 0% there is no shared text. A metrics panel tracks approximate
+   chunk count, storage, and context preservation. An explanation box
+   lands the trade-off: overlap preserves context across boundaries but
+   costs more storage and search work.
+5. **Search — "Most chunks are ignored"** — predict-then-reveal: the
    full grid (Vacation Policy still highlighted) plus *"Which chunks
    would you search?"* and a **Show Answer** button. The reveal
    breathes: irrelevant tiles fade out slowly and staggered (~1.5 s),
@@ -46,9 +53,11 @@ trade-off themselves.
 - Same paper canvas and single blue accent as episode one, but a
   different interaction model: no slide swaps — one persistent set of
   tiles morphs through every stage via shared `layoutId`s, so the
-  document and its chunks are always the same object.
+  document and its chunks are always the same object (the overlap step
+  swaps to a dedicated two-card preview so shared text can be read).
 - Stage headers crossfade above the canvas; every zone has a reserved
   min-height so nothing jumps.
 - Components: `StepHeader`, `NavigationFooter`, `PDFCard`,
-  `QuestionBadge`, `ChunkCanvas`, `SizeSlider`. All copy and size levels
+  `QuestionBadge`, `ChunkCanvas`, `SizeSlider`, `OverlapSlider`,
+  `OverlapPreview`, `OverlapMetrics`. All copy and size/overlap levels
   live in `data.ts`.
