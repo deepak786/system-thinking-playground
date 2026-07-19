@@ -3,11 +3,13 @@ import { Layout } from './components/Layout'
 import { Seo } from './components/Seo'
 import { About } from './pages/about/About'
 import { Home } from './pages/Home'
+import { SeriesHub } from './pages/SeriesHub'
 import { demoRegistry } from './demos/demoRegistry'
-import { demoPath, seriesSlugFor } from './demos/paths'
-import type { DemoDefinition } from './demos/types'
+import { demoPath, seriesPath } from './demos/paths'
+import { isPlayable, isSeries } from './demos/types'
+import type { PlayableDemo } from './demos/types'
 
-function DemoPage({ demo }: { demo: DemoDefinition }) {
+function DemoPage({ demo }: { demo: PlayableDemo }) {
   return (
     <>
       <Seo
@@ -21,9 +23,6 @@ function DemoPage({ demo }: { demo: DemoDefinition }) {
 }
 
 export default function App() {
-  const seriesDemos = demoRegistry.filter((d) => seriesSlugFor(d))
-  const standaloneDemos = demoRegistry.filter((d) => !seriesSlugFor(d))
-
   return (
     <BrowserRouter>
       <Routes>
@@ -31,21 +30,36 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="/about" element={<About />} />
 
-          {standaloneDemos.map((demo) => (
-            <Route
-              key={demo.id}
-              path={`/${demo.id}`}
-              element={<DemoPage demo={demo} />}
-            />
-          ))}
+          {demoRegistry.flatMap((entry) => {
+            if (isSeries(entry)) {
+              return [
+                <Route
+                  key={entry.id}
+                  path={seriesPath(entry)}
+                  element={<SeriesHub series={entry} />}
+                />,
+                ...entry.demos.filter(isPlayable).map((demo) => (
+                  <Route
+                    key={demo.id}
+                    path={demoPath(demo)}
+                    element={<DemoPage demo={demo} />}
+                  />
+                )),
+              ]
+            }
 
-          {seriesDemos.map((demo) => (
-            <Route
-              key={demo.id}
-              path={demoPath(demo)}
-              element={<DemoPage demo={demo} />}
-            />
-          ))}
+            if (isPlayable(entry)) {
+              return [
+                <Route
+                  key={entry.id}
+                  path={demoPath(entry)}
+                  element={<DemoPage demo={entry} />}
+                />,
+              ]
+            }
+
+            return []
+          })}
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

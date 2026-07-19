@@ -5,16 +5,17 @@ import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
 import { ApiRateLimiter } from './api-rate-limiter/ApiRateLimiter'
 import { UndoRedo } from './undo-redo/UndoRedo'
 import { LruCache } from './lru-cache/LruCache'
-import { ChatGptPdf } from './chatgpt-pdf/ChatGptPdf'
-import { PdfChunking } from './pdf-chunking/PdfChunking'
-import { PdfRetrieval } from './pdf-retrieval/PdfRetrieval'
-import { PdfContext } from './pdf-context/PdfContext'
-import { PdfGeneration } from './pdf-generation/PdfGeneration'
+import { ChatGptPdf } from './rag-fundamentals/chatgpt-pdf/ChatGptPdf'
+import { PdfChunking } from './rag-fundamentals/pdf-chunking/PdfChunking'
+import { PdfRetrieval } from './rag-fundamentals/pdf-retrieval/PdfRetrieval'
+import { PdfContext } from './rag-fundamentals/pdf-context/PdfContext'
+import { PdfGeneration } from './rag-fundamentals/pdf-generation/PdfGeneration'
 
 /**
- * The single source of truth for every demo in the playground.
- * Routes (`/<id>`), the sidebar, and the Home page cards are all generated
- * from this list — registering a demo here is the only wiring step.
+ * Single source of truth for demos and series.
+ * - Top-level demo with `component` → `/{id}` route, Home card, sidebar link.
+ * - Entry with `demos: [...]` → series hub at `/{id}`; nested demos are
+ *   episodes at `/{id}/{demoId}` (array order = Part number).
  */
 export const demoRegistry: DemoDefinition[] = [
   {
@@ -78,71 +79,75 @@ export const demoRegistry: DemoDefinition[] = [
     component: LruCache,
   },
   {
-    id: 'chatgpt-pdf',
-    title: 'How ChatGPT Answers Questions About Your PDF',
-    description: 'Behind the scenes of document Q&A',
-    difficulty: 'Beginner',
-    concepts: ['RAG', 'Chunking', 'Search', 'Context'],
+    id: 'rag-fundamentals',
+    title: 'RAG Fundamentals',
+    description:
+      'A five-part series on how ChatGPT answers questions about your PDF — from chunking to the final answer.',
     metaDescription:
-      'Interactive walkthrough of how ChatGPT answers questions about a document: see how a PDF is split, searched, and used to write the answer, one guided step at a time.',
+      'Interactive five-part series on retrieval-augmented generation: watch how a PDF is split, searched, packaged into context, and used to write an answer.',
     icon: FileSearch,
     accentClass: 'text-blue-400',
-    component: ChatGptPdf,
-    seriesSlug: 'rag-fundamentals',
-    seriesTitle: 'RAG Fundamentals',
-    seriesDescription:
-      'A five-part series on how ChatGPT answers questions about your PDF — from chunking to the final answer.',
-  },
-  {
-    id: 'pdf-chunking',
-    title: 'How AI Splits Your PDF into Chunks',
-    description: 'Why one PDF becomes many small pieces',
-    difficulty: 'Beginner',
-    concepts: ['Chunking', 'Documents', 'Search', 'Chunk Size'],
-    metaDescription:
-      'Interactive visualization of why AI splits PDFs into chunks: see a 320-page document divided into small pieces, why searching them beats searching the whole file, and what the right chunk size looks like.',
-    icon: Scissors,
-    accentClass: 'text-cyan-400',
-    component: PdfChunking,
-    partOf: 'chatgpt-pdf',
-  },
-  {
-    id: 'pdf-retrieval',
-    title: 'How AI Finds the Right Information in Your PDF',
-    description: 'How AI picks the few chunks that matter',
-    difficulty: 'Beginner',
-    concepts: ['Search', 'Relevance', 'Ranking', 'Context'],
-    metaDescription:
-      'Interactive visualization of how AI finds the right information in a PDF: watch one question check twenty chunks, rank the closest matches, and send only the top three forward.',
-    icon: SearchCheck,
-    accentClass: 'text-teal-400',
-    component: PdfRetrieval,
-    partOf: 'chatgpt-pdf',
-  },
-  {
-    id: 'pdf-context',
-    title: 'What Does ChatGPT Actually Receive?',
-    description: 'The package of question + relevant chunks',
-    difficulty: 'Beginner',
-    concepts: ['Context', 'Question', 'Selected Chunks', 'Answer'],
-    metaDescription:
-      'Interactive visualization of what ChatGPT actually receives: not your entire PDF, but one package containing your question and only the relevant chunks — and how the answer is generated from exactly that.',
-    icon: Package,
-    accentClass: 'text-indigo-400',
-    component: PdfContext,
-    partOf: 'chatgpt-pdf',
-  },
-  {
-    id: 'pdf-generation',
-    title: 'How ChatGPT Generates Answers Using Your PDF',
-    description: 'Reading the context & writing the answer',
-    difficulty: 'Beginner',
-    concepts: ['Reading', 'Answer Generation', 'Grounding', 'RAG'],
-    metaDescription:
-      'Interactive visualization of how ChatGPT generates answers using your PDF: it receives the question and relevant chunks, reads them carefully, and writes a natural-language answer — the finale of the RAG Fundamentals series.',
-    icon: PenLine,
-    accentClass: 'text-amber-400',
-    component: PdfGeneration,
-    partOf: 'chatgpt-pdf',
+    demos: [
+      {
+        id: 'chatgpt-pdf',
+        title: 'How ChatGPT Answers Questions About Your PDF',
+        description: 'Behind the scenes of document Q&A',
+        difficulty: 'Beginner',
+        concepts: ['RAG', 'Chunking', 'Search', 'Context'],
+        metaDescription:
+          'Interactive walkthrough of how ChatGPT answers questions about a document: see how a PDF is split, searched, and used to write the answer, one guided step at a time.',
+        icon: FileSearch,
+        accentClass: 'text-blue-400',
+        component: ChatGptPdf,
+      },
+      {
+        id: 'pdf-chunking',
+        title: 'How AI Splits Your PDF into Chunks',
+        description: 'Why one PDF becomes many small pieces',
+        difficulty: 'Beginner',
+        concepts: ['Chunking', 'Documents', 'Search', 'Chunk Size'],
+        metaDescription:
+          'Interactive visualization of why AI splits PDFs into chunks: see a 320-page document divided into small pieces, why searching them beats searching the whole file, and what the right chunk size looks like.',
+        icon: Scissors,
+        accentClass: 'text-cyan-400',
+        component: PdfChunking,
+      },
+      {
+        id: 'pdf-retrieval',
+        title: 'How AI Finds the Right Information in Your PDF',
+        description: 'How AI picks the few chunks that matter',
+        difficulty: 'Beginner',
+        concepts: ['Search', 'Relevance', 'Ranking', 'Context'],
+        metaDescription:
+          'Interactive visualization of how AI finds the right information in a PDF: watch one question check twenty chunks, rank the closest matches, and send only the top three forward.',
+        icon: SearchCheck,
+        accentClass: 'text-teal-400',
+        component: PdfRetrieval,
+      },
+      {
+        id: 'pdf-context',
+        title: 'What Does ChatGPT Actually Receive?',
+        description: 'The package of question + relevant chunks',
+        difficulty: 'Beginner',
+        concepts: ['Context', 'Question', 'Selected Chunks', 'Answer'],
+        metaDescription:
+          'Interactive visualization of what ChatGPT actually receives: not your entire PDF, but one package containing your question and only the relevant chunks — and how the answer is generated from exactly that.',
+        icon: Package,
+        accentClass: 'text-indigo-400',
+        component: PdfContext,
+      },
+      {
+        id: 'pdf-generation',
+        title: 'How ChatGPT Generates Answers Using Your PDF',
+        description: 'Reading the context & writing the answer',
+        difficulty: 'Beginner',
+        concepts: ['Reading', 'Answer Generation', 'Grounding', 'RAG'],
+        metaDescription:
+          'Interactive visualization of how ChatGPT generates answers using your PDF: it receives the question and relevant chunks, reads them carefully, and writes a natural-language answer — the finale of the RAG Fundamentals series.',
+        icon: PenLine,
+        accentClass: 'text-amber-400',
+        component: PdfGeneration,
+      },
+    ],
   },
 ]

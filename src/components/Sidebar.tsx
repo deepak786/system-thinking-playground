@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { CircleHelp, Home, PanelLeftClose, PanelLeftOpen, Sparkles } from 'lucide-react'
 import type { DemoDefinition } from '../demos/types'
-import { demoPath } from '../demos/paths'
+import { isSeries } from '../demos/types'
+import { demoPath, seriesPath } from '../demos/paths'
 import { cn } from '../lib/cn'
 
 type SidebarProps = {
-  demos: DemoDefinition[]
+  registry: DemoDefinition[]
 }
 
 const COLLAPSED_KEY = 'sidebar-collapsed'
@@ -23,12 +24,11 @@ const PRIMARY_LINKS = [
 ] as const
 
 /**
- * Left navigation: brand (links home), primary pages, then one NavLink per
- * registered demo. On desktop it can be collapsed to an icon-only rail; the
- * choice is remembered in localStorage. On mobile the sidebar stacks above
- * the page, so the toggle is hidden there.
+ * Left navigation: brand (links home), primary pages, then registry entries
+ * in order (series parent → hub, children → episodes). On desktop it can be
+ * collapsed to an icon-only rail; the choice is remembered in localStorage.
  */
-export function Sidebar({ demos }: SidebarProps) {
+export function Sidebar({ registry }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem(COLLAPSED_KEY) === 'yes',
   )
@@ -121,16 +121,17 @@ export function Sidebar({ demos }: SidebarProps) {
       </div>
 
       <nav aria-label="Demos" className="flex flex-col gap-1.5">
-        {demos
-          .filter((demo) => !demo.partOf)
-          .map((demo) => {
-            const Icon = demo.icon
-            const episodes = demos.filter((d) => d.partOf === demo.id)
+        {registry.map((entry) => {
+          const Icon = entry.icon
+
+          if (isSeries(entry)) {
+            const episodes = entry.demos
             return (
-              <div key={demo.id} className="flex flex-col gap-1">
+              <div key={entry.id} className="flex flex-col gap-1">
                 <NavLink
-                  to={demoPath(demo)}
-                  title={demo.title}
+                  to={seriesPath(entry)}
+                  end
+                  title={entry.title}
                   className={({ isActive }) =>
                     cn(
                       'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
@@ -144,71 +145,102 @@ export function Sidebar({ demos }: SidebarProps) {
                   <span
                     className={cn(
                       'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800/80 ring-1 ring-slate-700',
-                      demo.accentClass,
+                      entry.accentClass,
                     )}
                   >
                     <Icon className="h-5 w-5" />
                   </span>
                   <span className={cn('min-w-0 flex-1', collapsed && 'lg:hidden')}>
                     <span className="block truncate text-sm font-semibold text-slate-100">
-                      {demo.title}
+                      {entry.title}
                     </span>
                     <span className="mt-0.5 block truncate text-xs text-slate-500">
-                      {demo.seriesTitle
-                        ? `${demo.seriesTitle} · ${episodes.length + 1} parts`
-                        : demo.description}
+                      {episodes.length}-part series
                     </span>
                   </span>
                 </NavLink>
 
-                {episodes.length > 0 && (
-                  <div
-                    className={cn(
-                      'ml-[29px] flex flex-col gap-0.5 border-l border-slate-800 pl-2',
-                      collapsed && 'lg:ml-0 lg:border-l-0 lg:pl-0',
-                    )}
-                  >
-                    {episodes.map((episode, i) => {
-                      const EpisodeIcon = episode.icon
-                      return (
-                        <NavLink
-                          key={episode.id}
-                          to={demoPath(episode)}
-                          title={`Part ${i + 2} — ${episode.title}`}
-                          className={({ isActive }) =>
-                            cn(
-                              'group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors',
-                              isActive
-                                ? 'bg-slate-800 ring-1 ring-slate-700'
-                                : 'hover:bg-slate-900',
-                              collapsed && 'lg:justify-center lg:px-0',
-                            )
-                          }
+                <div
+                  className={cn(
+                    'ml-[29px] flex flex-col gap-0.5 border-l border-slate-800 pl-2',
+                    collapsed && 'lg:ml-0 lg:border-l-0 lg:pl-0',
+                  )}
+                >
+                  {episodes.map((episode, i) => {
+                    const EpisodeIcon = episode.icon
+                    return (
+                      <NavLink
+                        key={episode.id}
+                        to={demoPath(episode)}
+                        title={`Part ${i + 1} — ${episode.title}`}
+                        className={({ isActive }) =>
+                          cn(
+                            'group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors',
+                            isActive
+                              ? 'bg-slate-800 ring-1 ring-slate-700'
+                              : 'hover:bg-slate-900',
+                            collapsed && 'lg:justify-center lg:px-0',
+                          )
+                        }
+                      >
+                        <span
+                          className={cn(
+                            'flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-800/80 ring-1 ring-slate-700',
+                            episode.accentClass,
+                          )}
                         >
-                          <span
-                            className={cn(
-                              'flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-800/80 ring-1 ring-slate-700',
-                              episode.accentClass,
-                            )}
-                          >
-                            <EpisodeIcon className="h-4 w-4" />
-                          </span>
-                          <span
-                            className={cn(
-                              'block min-w-0 flex-1 truncate text-[13px] font-medium text-slate-300',
-                              collapsed && 'lg:hidden',
-                            )}
-                          >
-                            {episode.title}
-                          </span>
-                        </NavLink>
-                      )
-                    })}
-                  </div>
-                )}
+                          <EpisodeIcon className="h-4 w-4" />
+                        </span>
+                        <span
+                          className={cn(
+                            'block min-w-0 flex-1 truncate text-[13px] font-medium text-slate-300',
+                            collapsed && 'lg:hidden',
+                          )}
+                        >
+                          {episode.title}
+                        </span>
+                      </NavLink>
+                    )
+                  })}
+                </div>
               </div>
             )
-          })}
+          }
+
+          return (
+            <NavLink
+              key={entry.id}
+              to={demoPath(entry)}
+              title={entry.title}
+              className={({ isActive }) =>
+                cn(
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
+                  isActive
+                    ? 'bg-slate-800 ring-1 ring-slate-700'
+                    : 'hover:bg-slate-900',
+                  collapsed && 'lg:justify-center lg:px-0',
+                )
+              }
+            >
+              <span
+                className={cn(
+                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800/80 ring-1 ring-slate-700',
+                  entry.accentClass,
+                )}
+              >
+                <Icon className="h-5 w-5" />
+              </span>
+              <span className={cn('min-w-0 flex-1', collapsed && 'lg:hidden')}>
+                <span className="block truncate text-sm font-semibold text-slate-100">
+                  {entry.title}
+                </span>
+                <span className="mt-0.5 block truncate text-xs text-slate-500">
+                  {entry.description}
+                </span>
+              </span>
+            </NavLink>
+          )
+        })}
       </nav>
     </aside>
   )
