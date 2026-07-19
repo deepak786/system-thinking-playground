@@ -1,4 +1,4 @@
-import { FileSearch, Gauge, MessageCircle, Network, Package, Scissors, SearchCheck, Undo2, Zap } from 'lucide-react'
+import { FileSearch, Gauge, MessageCircle, Network, Package, PenLine, Scissors, SearchCheck, Undo2, Zap } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
@@ -9,6 +9,7 @@ import { ChatGptPdf } from './chatgpt-pdf/ChatGptPdf'
 import { PdfChunking } from './pdf-chunking/PdfChunking'
 import { PdfRetrieval } from './pdf-retrieval/PdfRetrieval'
 import { PdfContext } from './pdf-context/PdfContext'
+import { PdfGeneration } from './pdf-generation/PdfGeneration'
 
 /**
  * The single source of truth for every demo in the playground.
@@ -123,5 +124,17 @@ export const demoRegistry: DemoDefinition[] = [
     icon: Package,
     accentClass: 'text-indigo-400',
     component: PdfContext,
+  },
+  {
+    id: 'pdf-generation',
+    title: 'How ChatGPT Generates Answers Using Your PDF',
+    description: 'Reading the context & writing the answer',
+    difficulty: 'Beginner',
+    concepts: ['Reading', 'Answer Generation', 'Grounding', 'RAG'],
+    metaDescription:
+      'Interactive visualization of how ChatGPT generates answers using your PDF: it receives the question and relevant chunks, reads them carefully, and writes a natural-language answer — the finale of the RAG Fundamentals series.',
+    icon: PenLine,
+    accentClass: 'text-amber-400',
+    component: PdfGeneration,
   },
 ]
