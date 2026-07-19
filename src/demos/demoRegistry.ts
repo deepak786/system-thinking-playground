@@ -1,4 +1,4 @@
-import { FileSearch, Gauge, MessageCircle, Network, Undo2, Zap } from 'lucide-react'
+import { FileSearch, Gauge, MessageCircle, Network, Scissors, Undo2, Zap } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
@@ -6,6 +6,7 @@ import { ApiRateLimiter } from './api-rate-limiter/ApiRateLimiter'
 import { UndoRedo } from './undo-redo/UndoRedo'
 import { LruCache } from './lru-cache/LruCache'
 import { ChatGptPdf } from './chatgpt-pdf/ChatGptPdf'
+import { PdfChunking } from './pdf-chunking/PdfChunking'
 
 /**
  * The single source of truth for every demo in the playground.
@@ -84,5 +85,17 @@ export const demoRegistry: DemoDefinition[] = [
     icon: FileSearch,
     accentClass: 'text-blue-400',
     component: ChatGptPdf,
+  },
+  {
+    id: 'pdf-chunking',
+    title: 'How AI Splits Your PDF into Chunks',
+    description: 'Why one PDF becomes many small pieces',
+    difficulty: 'Beginner',
+    concepts: ['Chunking', 'Documents', 'Search', 'Chunk Size'],
+    metaDescription:
+      'Interactive visualization of why AI splits PDFs into chunks: see a 320-page document divided into small pieces, why searching them beats searching the whole file, and what the right chunk size looks like.',
+    icon: Scissors,
+    accentClass: 'text-cyan-400',
+    component: PdfChunking,
   },
 ]
