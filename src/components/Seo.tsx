@@ -1,7 +1,5 @@
 import { useLocation } from 'react-router-dom'
-
-const SITE_NAME = 'System Thinking Playground'
-const SITE_URL = 'https://play.deepakdroid.xyz'
+import { SITE_NAME, SITE_URL } from '../config/site'
 
 type SeoProps = {
   /** Page title; rendered as "<title> | System Thinking Playground". */

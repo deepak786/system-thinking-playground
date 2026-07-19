@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { PanelLeftClose, PanelLeftOpen, Sparkles } from 'lucide-react'
+import { CircleHelp, Home, PanelLeftClose, PanelLeftOpen, Sparkles } from 'lucide-react'
 import type { DemoDefinition } from '../demos/types'
 import { cn } from '../lib/cn'
 
@@ -10,11 +10,22 @@ type SidebarProps = {
 
 const COLLAPSED_KEY = 'sidebar-collapsed'
 
+const PRIMARY_LINKS = [
+  { to: '/', label: 'Home', description: 'All demos', icon: Home, end: true },
+  {
+    to: '/about',
+    label: 'About',
+    description: 'Why this exists',
+    icon: CircleHelp,
+    end: false,
+  },
+] as const
+
 /**
- * Left navigation: brand (links home) plus one NavLink per registered demo.
- * On desktop it can be collapsed to an icon-only rail; the choice is
- * remembered in localStorage. On mobile the sidebar stacks above the page,
- * so the toggle is hidden there.
+ * Left navigation: brand (links home), primary pages, then one NavLink per
+ * registered demo. On desktop it can be collapsed to an icon-only rail; the
+ * choice is remembered in localStorage. On mobile the sidebar stacks above
+ * the page, so the toggle is hidden there.
  */
 export function Sidebar({ demos }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(
@@ -60,6 +71,7 @@ export function Sidebar({ demos }: SidebarProps) {
         </Link>
 
         <button
+          type="button"
           onClick={toggle}
           aria-label={toggleLabel}
           title={toggleLabel}
@@ -69,7 +81,45 @@ export function Sidebar({ demos }: SidebarProps) {
         </button>
       </div>
 
-      <nav className="flex flex-col gap-1.5">
+      <nav aria-label="Primary" className="flex flex-col gap-1">
+        {PRIMARY_LINKS.map(({ to, label, description, icon: Icon, end }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            title={label}
+            className={({ isActive }) =>
+              cn(
+                'group flex items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors',
+                isActive
+                  ? 'bg-slate-800 ring-1 ring-slate-700'
+                  : 'hover:bg-slate-900',
+                collapsed && 'lg:justify-center lg:px-0',
+              )
+            }
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-800/80 text-slate-300 ring-1 ring-slate-700">
+              <Icon className="h-4 w-4" aria-hidden />
+            </span>
+            <span className={cn('min-w-0 flex-1', collapsed && 'lg:hidden')}>
+              <span className="block truncate text-sm font-semibold text-slate-100">
+                {label}
+              </span>
+              <span className="mt-0.5 block truncate text-xs text-slate-500">
+                {description}
+              </span>
+            </span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className={cn('px-1', collapsed && 'lg:hidden')}>
+        <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          Demos
+        </p>
+      </div>
+
+      <nav aria-label="Demos" className="flex flex-col gap-1.5">
         {demos
           .filter((demo) => !demo.partOf)
           .map((demo) => {
