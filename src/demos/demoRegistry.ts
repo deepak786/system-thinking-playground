@@ -1,4 +1,4 @@
-import { FileSearch, Gauge, MessageCircle, Network, Scissors, SearchCheck, Undo2, Zap } from 'lucide-react'
+import { FileSearch, Gauge, MessageCircle, Network, Package, Scissors, SearchCheck, Undo2, Zap } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
@@ -8,6 +8,7 @@ import { LruCache } from './lru-cache/LruCache'
 import { ChatGptPdf } from './chatgpt-pdf/ChatGptPdf'
 import { PdfChunking } from './pdf-chunking/PdfChunking'
 import { PdfRetrieval } from './pdf-retrieval/PdfRetrieval'
+import { PdfContext } from './pdf-context/PdfContext'
 
 /**
  * The single source of truth for every demo in the playground.
@@ -110,5 +111,17 @@ export const demoRegistry: DemoDefinition[] = [
     icon: SearchCheck,
     accentClass: 'text-teal-400',
     component: PdfRetrieval,
+  },
+  {
+    id: 'pdf-context',
+    title: 'What Does ChatGPT Actually Receive?',
+    description: 'The package of question + relevant chunks',
+    difficulty: 'Beginner',
+    concepts: ['Context', 'Question', 'Selected Chunks', 'Answer'],
+    metaDescription:
+      'Interactive visualization of what ChatGPT actually receives: not your entire PDF, but one package containing your question and only the relevant chunks — and how the answer is generated from exactly that.',
+    icon: Package,
+    accentClass: 'text-indigo-400',
+    component: PdfContext,
   },
 ]

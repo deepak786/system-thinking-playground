@@ -78,7 +78,7 @@ const ENDING_HEADER = {
   step: 4,
   name: 'Search',
   title: 'How does AI know which chunks are relevant?',
-  subtitle: 'That question is the next episode.',
+  subtitle: 'We\u2019ll answer that in the next video.',
 }
 
 const VERDICT_STYLE: Record<Verdict, string> = {
