@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { CircleHelp, Home, PanelLeftClose, PanelLeftOpen, Sparkles } from 'lucide-react'
 import type { DemoDefinition } from '../demos/types'
+import { demoPath } from '../demos/paths'
 import { cn } from '../lib/cn'
 
 type SidebarProps = {
@@ -128,7 +129,7 @@ export function Sidebar({ demos }: SidebarProps) {
             return (
               <div key={demo.id} className="flex flex-col gap-1">
                 <NavLink
-                  to={`/${demo.id}`}
+                  to={demoPath(demo)}
                   title={demo.title}
                   className={({ isActive }) =>
                     cn(
@@ -172,7 +173,7 @@ export function Sidebar({ demos }: SidebarProps) {
                       return (
                         <NavLink
                           key={episode.id}
-                          to={`/${episode.id}`}
+                          to={demoPath(episode)}
                           title={`Part ${i + 2} — ${episode.title}`}
                           className={({ isActive }) =>
                             cn(

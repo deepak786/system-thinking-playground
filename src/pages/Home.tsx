@@ -3,6 +3,7 @@ import { ArrowRight, ListVideo } from 'lucide-react'
 import { Seo } from '../components/Seo'
 import { demoRegistry } from '../demos/demoRegistry'
 import type { DemoDefinition, Difficulty } from '../demos/types'
+import { demoPath } from '../demos/paths'
 import { cn } from '../lib/cn'
 
 const difficultyStyles: Record<Difficulty, string> = {
@@ -21,7 +22,7 @@ function DemoCard({ demo, part }: DemoCardProps) {
   const Icon = demo.icon
   return (
     <Link
-      to={`/${demo.id}`}
+      to={demoPath(demo)}
       className="group flex flex-col gap-3 rounded-2xl bg-slate-900/70 p-5 ring-1 ring-slate-700/60 shadow-soft transition-all hover:-translate-y-0.5 hover:ring-slate-500/70"
     >
       <div className="flex items-start justify-between gap-3">

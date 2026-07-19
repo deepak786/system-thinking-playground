@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { ArrowRight, Check, RotateCcw, X } from 'lucide-react'
 import { cn } from '../../lib/cn'
+import { demoPathById } from '../paths'
 import { EASE_OUT, staggerContainer } from './animations'
 import { CANDIDATE_TITLES, CHUNKS, RELEVANCE_LABEL } from './data'
 import { StepHeader } from './components/StepHeader'
@@ -364,7 +365,7 @@ export function PdfRetrieval() {
                     whileTap={{ scale: 0.98 }}
                   >
                     <Link
-                      to="/pdf-context"
+                      to={demoPathById('pdf-context')}
                       className="group flex flex-col items-center gap-1 rounded-2xl border border-[#0071e3]/25 bg-white px-8 py-4 shadow-[0_8px_28px_rgba(0,113,227,0.10)] outline-none transition-[border-color,box-shadow] duration-200 hover:border-[#0071e3]/50 hover:shadow-[0_12px_36px_rgba(0,113,227,0.16)] focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafaf9]"
                     >
                       <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-[#86868b]">

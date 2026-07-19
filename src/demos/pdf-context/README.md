@@ -50,5 +50,5 @@ it.
   `QuestionCard`, `ChunkCard`, `ContextContainer`, `InformationPanel`,
   `ChatGPTCard`, `AnswerCard`. All copy, snippets, and answer sentences
   live in `data.ts`.
-- Episode 3's ending card links here (`/pdf-context`); this demo's own
+- Episode 3's ending card links here (`/rag-fundamentals/pdf-context`); this demo's own
   ending card is a static teaser until episode 5 exists.

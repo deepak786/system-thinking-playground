@@ -54,4 +54,4 @@ that and writes a clear answer.
   `ContextPackage`, `ChatGPTCard`, `InfoCard` (idle / reading / read
   states), `GeneratedAnswer`, `PipelineSummary`. All copy lives in
   `data.ts`.
-- Episode 4's ending card links here (`/pdf-generation`).
+- Episode 4's ending card links here (`/rag-fundamentals/pdf-generation`).

@@ -9,7 +9,7 @@ export type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced'
  * is: create its folder, then add one `DemoDefinition` entry.
  */
 export type DemoDefinition = {
-  /** Stable slug; also the URL path (e.g. "whatsapp-delivery" → /whatsapp-delivery). */
+  /** Stable slug used in the URL (standalone: /{id}; series: /{seriesSlug}/{id}). */
   id: string
   title: string
   /** One-line description shown in the sidebar and on the Home cards. */
@@ -34,6 +34,12 @@ export type DemoDefinition = {
    * with it on the Home page. Registry order defines the episode order.
    */
   partOf?: string
+  /**
+   * URL prefix for a series (e.g. "rag-fundamentals"), set on the series
+   * anchor. Anchor + episodes live at `/{seriesSlug}/{id}`; standalone
+   * demos stay at `/{id}`.
+   */
+  seriesSlug?: string
   /** Series name, set on the demo that anchors a series (e.g. episode 1). */
   seriesTitle?: string
   /** One-line series blurb shown in the Home page series header. */

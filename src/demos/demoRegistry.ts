@@ -88,6 +88,7 @@ export const demoRegistry: DemoDefinition[] = [
     icon: FileSearch,
     accentClass: 'text-blue-400',
     component: ChatGptPdf,
+    seriesSlug: 'rag-fundamentals',
     seriesTitle: 'RAG Fundamentals',
     seriesDescription:
       'A five-part series on how ChatGPT answers questions about your PDF — from chunking to the final answer.',
