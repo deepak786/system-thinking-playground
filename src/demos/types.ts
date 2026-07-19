@@ -28,4 +28,14 @@ export type DemoDefinition = {
   /** Tailwind text color class for the icon accent. */
   accentClass: string
   component: ComponentType
+  /**
+   * When set, this demo is an episode of the series anchored by the demo
+   * with this id. It is nested under that demo in the sidebar and grouped
+   * with it on the Home page. Registry order defines the episode order.
+   */
+  partOf?: string
+  /** Series name, set on the demo that anchors a series (e.g. episode 1). */
+  seriesTitle?: string
+  /** One-line series blurb shown in the Home page series header. */
+  seriesDescription?: string
 }

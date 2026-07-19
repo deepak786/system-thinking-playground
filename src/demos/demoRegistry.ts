@@ -88,6 +88,9 @@ export const demoRegistry: DemoDefinition[] = [
     icon: FileSearch,
     accentClass: 'text-blue-400',
     component: ChatGptPdf,
+    seriesTitle: 'RAG Fundamentals',
+    seriesDescription:
+      'A five-part series on how ChatGPT answers questions about your PDF — from chunking to the final answer.',
   },
   {
     id: 'pdf-chunking',
@@ -100,6 +103,7 @@ export const demoRegistry: DemoDefinition[] = [
     icon: Scissors,
     accentClass: 'text-cyan-400',
     component: PdfChunking,
+    partOf: 'chatgpt-pdf',
   },
   {
     id: 'pdf-retrieval',
@@ -112,6 +116,7 @@ export const demoRegistry: DemoDefinition[] = [
     icon: SearchCheck,
     accentClass: 'text-teal-400',
     component: PdfRetrieval,
+    partOf: 'chatgpt-pdf',
   },
   {
     id: 'pdf-context',
@@ -124,6 +129,7 @@ export const demoRegistry: DemoDefinition[] = [
     icon: Package,
     accentClass: 'text-indigo-400',
     component: PdfContext,
+    partOf: 'chatgpt-pdf',
   },
   {
     id: 'pdf-generation',
@@ -136,5 +142,6 @@ export const demoRegistry: DemoDefinition[] = [
     icon: PenLine,
     accentClass: 'text-amber-400',
     component: PdfGeneration,
+    partOf: 'chatgpt-pdf',
   },
 ]
