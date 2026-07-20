@@ -1,4 +1,4 @@
-import { FileSearch, Gauge, MessageCircle, Network, Package, PenLine, Scissors, SearchCheck, Undo2, Zap } from 'lucide-react'
+import { Coffee, FileSearch, Gauge, MessageCircle, Network, Package, PenLine, Scissors, SearchCheck, Undo2, Zap } from 'lucide-react'
 import type { DemoDefinition } from './types'
 import { WhatsAppDelivery } from './whatsapp-delivery/WhatsAppDelivery'
 import { LinkedInConnections } from './linkedin-connections/LinkedInConnections'
@@ -10,6 +10,7 @@ import { PdfChunking } from './rag-fundamentals/pdf-chunking/PdfChunking'
 import { PdfRetrieval } from './rag-fundamentals/pdf-retrieval/PdfRetrieval'
 import { PdfContext } from './rag-fundamentals/pdf-context/PdfContext'
 import { PdfGeneration } from './rag-fundamentals/pdf-generation/PdfGeneration'
+import { SpatialIndexingPlayground } from './spatial-indexing-playground/SpatialIndexingPlayground'
 
 /**
  * Single source of truth for demos and series.
@@ -149,5 +150,17 @@ export const demoRegistry: DemoDefinition[] = [
         component: PdfGeneration,
       },
     ],
+  },
+  {
+    id: 'spatial-indexing-playground',
+    title: 'Spatial Indexing Playground',
+    description: 'Find nearby places without searching the whole city',
+    difficulty: 'Beginner',
+    concepts: ['Spatial Index', 'Nearest Neighbor', 'Grid', 'Quadtree'],
+    metaDescription:
+      'A guided interactive exhibit on spatial indexing: watch why checking every coffee shop fails, then learn how fixed grids, adaptive quadtrees, and hexagons shrink the search.',
+    icon: Coffee,
+    accentClass: 'text-amber-400',
+    component: SpatialIndexingPlayground,
   },
 ]
