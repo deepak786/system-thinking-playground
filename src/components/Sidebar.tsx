@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import {
   ChevronDown,
@@ -43,6 +43,8 @@ function seriesContainsPath(series: SeriesDemo, pathname: string): boolean {
  */
 export function Sidebar({ registry }: SidebarProps) {
   const location = useLocation()
+  const menuTitleId = useId()
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem(COLLAPSED_KEY) === 'yes',
   )
@@ -70,13 +72,27 @@ export function Sidebar({ registry }: SidebarProps) {
     setMobileOpen(false)
   }, [location.pathname])
 
-  // Prevent background scroll while the drawer is open.
+  // Lock the scrolling <main> (not just body) while the drawer is open,
+  // close on Escape, and move focus into the panel.
   useEffect(() => {
     if (!mobileOpen) return
-    const prev = document.body.style.overflow
+
+    const main = document.getElementById('app-main')
+    const prevBody = document.body.style.overflow
+    const prevMain = main?.style.overflow ?? ''
     document.body.style.overflow = 'hidden'
+    if (main) main.style.overflow = 'hidden'
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    closeButtonRef.current?.focus()
+
     return () => {
-      document.body.style.overflow = prev
+      document.body.style.overflow = prevBody
+      if (main) main.style.overflow = prevMain
+      window.removeEventListener('keydown', onKeyDown)
     }
   }, [mobileOpen])
 
@@ -184,13 +200,14 @@ export function Sidebar({ registry }: SidebarProps) {
         />
       </aside>
 
-      {/* Mobile slide-over */}
+      {/* Mobile slide-over — inert when closed so links can't be tabbed to. */}
       <div
         className={cn(
           'fixed inset-0 z-50 lg:hidden',
           mobileOpen ? 'pointer-events-auto' : 'pointer-events-none',
         )}
         aria-hidden={!mobileOpen}
+        inert={mobileOpen ? undefined : true}
       >
         <button
           type="button"
@@ -205,7 +222,7 @@ export function Sidebar({ registry }: SidebarProps) {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Navigation menu"
+          aria-labelledby={menuTitleId}
           className={cn(
             'absolute inset-y-0 left-0 flex w-[min(20rem,88vw)] flex-col gap-4 bg-slate-950 p-4 shadow-2xl ring-1 ring-slate-800 transition-transform duration-200 ease-out',
             mobileOpen ? 'translate-x-0' : '-translate-x-full',
@@ -220,13 +237,17 @@ export function Sidebar({ registry }: SidebarProps) {
                 <Sparkles className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-bold leading-tight text-slate-100">
+                <p
+                  id={menuTitleId}
+                  className="text-sm font-bold leading-tight text-slate-100"
+                >
                   System Thinking
                 </p>
                 <p className="text-xs text-slate-500">Interactive Playground</p>
               </div>
             </Link>
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={() => setMobileOpen(false)}
               aria-label="Close menu"
