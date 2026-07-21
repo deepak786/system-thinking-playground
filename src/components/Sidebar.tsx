@@ -1,7 +1,16 @@
-import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
-import { CircleHelp, Home, PanelLeftClose, PanelLeftOpen, Sparkles } from 'lucide-react'
-import type { DemoDefinition } from '../demos/types'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import {
+  ChevronDown,
+  CircleHelp,
+  Home,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Sparkles,
+  X,
+} from 'lucide-react'
+import type { DemoDefinition, SeriesDemo } from '../demos/types'
 import { isSeries } from '../demos/types'
 import { demoPath, seriesPath } from '../demos/paths'
 import { cn } from '../lib/cn'
@@ -23,20 +32,67 @@ const PRIMARY_LINKS = [
   },
 ] as const
 
+function seriesContainsPath(series: SeriesDemo, pathname: string): boolean {
+  if (pathname === seriesPath(series)) return true
+  return series.demos.some((episode) => pathname === demoPath(episode))
+}
+
 /**
- * Left navigation: brand (links home), primary pages, then registry entries
- * in order (series parent → hub, children → episodes). On desktop it can be
- * collapsed to an icon-only rail; the choice is remembered in localStorage.
+ * Desktop: collapsible left rail.
+ * Mobile: compact top bar + slide-over menu for demos.
  */
 export function Sidebar({ registry }: SidebarProps) {
+  const location = useLocation()
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem(COLLAPSED_KEY) === 'yes',
   )
+  const [openSeries, setOpenSeries] = useState<Set<string>>(() => new Set())
+  const [mobileOpen, setMobileOpen] = useState(false)
 
-  const toggle = () => {
+  useEffect(() => {
+    setOpenSeries((prev) => {
+      let changed = false
+      const next = new Set(prev)
+      for (const entry of registry) {
+        if (isSeries(entry) && seriesContainsPath(entry, location.pathname)) {
+          if (!next.has(entry.id)) {
+            next.add(entry.id)
+            changed = true
+          }
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [location.pathname, registry])
+
+  // Close the drawer after navigation.
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
+
+  // Prevent background scroll while the drawer is open.
+  useEffect(() => {
+    if (!mobileOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [mobileOpen])
+
+  const toggleCollapsed = () => {
     setCollapsed((prev) => {
       const next = !prev
       localStorage.setItem(COLLAPSED_KEY, next ? 'yes' : 'no')
+      return next
+    })
+  }
+
+  const toggleSeries = (id: string) => {
+    setOpenSeries((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
   }
@@ -45,25 +101,18 @@ export function Sidebar({ registry }: SidebarProps) {
   const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar'
 
   return (
-    <aside
-      className={cn(
-        'flex w-full shrink-0 flex-col gap-4 transition-[width] duration-300',
-        collapsed ? 'lg:w-[72px]' : 'lg:w-72',
-      )}
-    >
-      <div className={cn('flex items-center gap-1.5', collapsed && 'lg:flex-col lg:gap-2')}>
+    <>
+      {/* Mobile top bar */}
+      <div className="flex shrink-0 items-center gap-2 lg:hidden">
         <Link
           to="/"
           title="System Thinking Playground — Home"
-          className={cn(
-            'flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-1 py-1 transition-colors hover:bg-slate-900',
-            collapsed && 'lg:flex-none lg:px-1',
-          )}
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-1 py-1 transition-colors hover:bg-slate-900"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-500/40">
             <Sparkles className="h-5 w-5" />
           </span>
-          <div className={cn('min-w-0', collapsed && 'lg:hidden')}>
+          <div className="min-w-0">
             <p className="text-sm font-bold leading-tight text-slate-100">
               System Thinking
             </p>
@@ -73,16 +122,149 @@ export function Sidebar({ registry }: SidebarProps) {
 
         <button
           type="button"
-          onClick={toggle}
-          aria-label={toggleLabel}
-          title={toggleLabel}
-          className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 ring-1 ring-slate-800 transition-colors hover:bg-slate-900 hover:text-slate-300 lg:flex"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={mobileOpen}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-300 ring-1 ring-slate-800 transition-colors hover:bg-slate-900 hover:text-slate-100"
         >
-          <ToggleIcon className="h-5 w-5" />
+          <Menu className="h-5 w-5" />
         </button>
       </div>
 
-      <nav aria-label="Primary" className="flex flex-col gap-1">
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          'hidden w-full shrink-0 flex-col gap-4 transition-[width] duration-300 lg:flex',
+          'lg:h-full lg:min-h-0 lg:overflow-hidden',
+          collapsed ? 'lg:w-[72px]' : 'lg:w-72',
+        )}
+      >
+        <div
+          className={cn(
+            'flex shrink-0 items-center gap-1.5',
+            collapsed && 'lg:flex-col lg:gap-2',
+          )}
+        >
+          <Link
+            to="/"
+            title="System Thinking Playground — Home"
+            className={cn(
+              'flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-1 py-1 transition-colors hover:bg-slate-900',
+              collapsed && 'lg:flex-none lg:px-1',
+            )}
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-500/40">
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <div className={cn('min-w-0', collapsed && 'lg:hidden')}>
+              <p className="text-sm font-bold leading-tight text-slate-100">
+                System Thinking
+              </p>
+              <p className="text-xs text-slate-500">Interactive Playground</p>
+            </div>
+          </Link>
+
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-label={toggleLabel}
+            title={toggleLabel}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 ring-1 ring-slate-800 transition-colors hover:bg-slate-900 hover:text-slate-300"
+          >
+            <ToggleIcon className="h-5 w-5" />
+          </button>
+        </div>
+
+        <NavBody
+          registry={registry}
+          collapsed={collapsed}
+          openSeries={openSeries}
+          pathname={location.pathname}
+          onToggleSeries={toggleSeries}
+        />
+      </aside>
+
+      {/* Mobile slide-over */}
+      <div
+        className={cn(
+          'fixed inset-0 z-50 lg:hidden',
+          mobileOpen ? 'pointer-events-auto' : 'pointer-events-none',
+        )}
+        aria-hidden={!mobileOpen}
+      >
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            'absolute inset-0 bg-slate-950/70 transition-opacity duration-200',
+            mobileOpen ? 'opacity-100' : 'opacity-0',
+          )}
+        />
+
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+          className={cn(
+            'absolute inset-y-0 left-0 flex w-[min(20rem,88vw)] flex-col gap-4 bg-slate-950 p-4 shadow-2xl ring-1 ring-slate-800 transition-transform duration-200 ease-out',
+            mobileOpen ? 'translate-x-0' : '-translate-x-full',
+          )}
+        >
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              to="/"
+              className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-1 py-1 transition-colors hover:bg-slate-900"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-500/40">
+                <Sparkles className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-bold leading-tight text-slate-100">
+                  System Thinking
+                </p>
+                <p className="text-xs text-slate-500">Interactive Playground</p>
+              </div>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 ring-1 ring-slate-800 transition-colors hover:bg-slate-900 hover:text-slate-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <NavBody
+            registry={registry}
+            collapsed={false}
+            openSeries={openSeries}
+            pathname={location.pathname}
+            onToggleSeries={toggleSeries}
+          />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function NavBody({
+  registry,
+  collapsed,
+  openSeries,
+  pathname,
+  onToggleSeries,
+}: {
+  registry: DemoDefinition[]
+  collapsed: boolean
+  openSeries: Set<string>
+  pathname: string
+  onToggleSeries: (id: string) => void
+}) {
+  return (
+    <>
+      <nav aria-label="Primary" className="flex shrink-0 flex-col gap-1">
         {PRIMARY_LINKS.map(({ to, label, description, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -114,95 +296,131 @@ export function Sidebar({ registry }: SidebarProps) {
         ))}
       </nav>
 
-      <div className={cn('px-1', collapsed && 'lg:hidden')}>
+      <div className={cn('shrink-0 px-1', collapsed && 'lg:hidden')}>
         <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600">
           Demos
         </p>
       </div>
 
-      <nav aria-label="Demos" className="flex flex-col gap-1.5">
+      <nav
+        aria-label="Demos"
+        className="-mr-1 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain pr-1"
+      >
         {registry.map((entry) => {
           const Icon = entry.icon
 
           if (isSeries(entry)) {
             const episodes = entry.demos
+            const expanded = openSeries.has(entry.id)
+
             return (
               <div key={entry.id} className="flex flex-col gap-1">
-                <NavLink
-                  to={seriesPath(entry)}
-                  end
-                  title={entry.title}
-                  className={({ isActive }) =>
-                    cn(
-                      'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
-                      isActive
-                        ? 'bg-slate-800 ring-1 ring-slate-700'
-                        : 'hover:bg-slate-900',
-                      collapsed && 'lg:justify-center lg:px-0',
-                    )
-                  }
-                >
-                  <span
-                    className={cn(
-                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800/80 ring-1 ring-slate-700',
-                      entry.accentClass,
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className={cn('min-w-0 flex-1', collapsed && 'lg:hidden')}>
-                    <span className="block truncate text-sm font-semibold text-slate-100">
-                      {entry.title}
-                    </span>
-                    <span className="mt-0.5 block truncate text-xs text-slate-500">
-                      {episodes.length}-part series
-                    </span>
-                  </span>
-                </NavLink>
-
                 <div
                   className={cn(
-                    'ml-[29px] flex flex-col gap-0.5 border-l border-slate-800 pl-2',
-                    collapsed && 'lg:ml-0 lg:border-l-0 lg:pl-0',
+                    'group flex items-center gap-1 rounded-xl transition-colors',
+                    seriesContainsPath(entry, pathname) &&
+                      !episodes.some((e) => pathname === demoPath(e))
+                      ? 'bg-slate-800 ring-1 ring-slate-700'
+                      : '',
                   )}
                 >
-                  {episodes.map((episode, i) => {
-                    const EpisodeIcon = episode.icon
-                    return (
-                      <NavLink
-                        key={episode.id}
-                        to={demoPath(episode)}
-                        title={`Part ${i + 1} — ${episode.title}`}
-                        className={({ isActive }) =>
-                          cn(
-                            'group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors',
-                            isActive
-                              ? 'bg-slate-800 ring-1 ring-slate-700'
-                              : 'hover:bg-slate-900',
-                            collapsed && 'lg:justify-center lg:px-0',
-                          )
-                        }
-                      >
-                        <span
-                          className={cn(
-                            'flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-800/80 ring-1 ring-slate-700',
-                            episode.accentClass,
-                          )}
-                        >
-                          <EpisodeIcon className="h-4 w-4" />
-                        </span>
-                        <span
-                          className={cn(
-                            'block min-w-0 flex-1 truncate text-[13px] font-medium text-slate-300',
-                            collapsed && 'lg:hidden',
-                          )}
-                        >
-                          {episode.title}
-                        </span>
-                      </NavLink>
-                    )
-                  })}
+                  <NavLink
+                    to={seriesPath(entry)}
+                    end
+                    title={entry.title}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
+                        isActive
+                          ? 'bg-slate-800 ring-1 ring-slate-700'
+                          : 'hover:bg-slate-900',
+                        collapsed && 'lg:justify-center lg:px-0',
+                      )
+                    }
+                  >
+                    <span
+                      className={cn(
+                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800/80 ring-1 ring-slate-700',
+                        entry.accentClass,
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span
+                      className={cn('min-w-0 flex-1', collapsed && 'lg:hidden')}
+                    >
+                      <span className="block truncate text-sm font-semibold text-slate-100">
+                        {entry.title}
+                      </span>
+                      <span className="mt-0.5 block truncate text-xs text-slate-500">
+                        {episodes.length}-part series
+                      </span>
+                    </span>
+                  </NavLink>
+
+                  <button
+                    type="button"
+                    onClick={() => onToggleSeries(entry.id)}
+                    aria-expanded={expanded}
+                    aria-label={
+                      expanded
+                        ? `Collapse ${entry.title}`
+                        : `Expand ${entry.title}`
+                    }
+                    title={expanded ? 'Collapse series' : 'Expand series'}
+                    className={cn(
+                      'mr-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-200',
+                      collapsed && 'lg:hidden',
+                    )}
+                  >
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 transition-transform duration-200',
+                        expanded && 'rotate-180',
+                      )}
+                    />
+                  </button>
                 </div>
+
+                {expanded && (
+                  <div
+                    className={cn(
+                      'ml-[29px] flex flex-col gap-0.5 border-l border-slate-800 pl-2',
+                      collapsed && 'lg:hidden',
+                    )}
+                  >
+                    {episodes.map((episode, i) => {
+                      const EpisodeIcon = episode.icon
+                      return (
+                        <NavLink
+                          key={episode.id}
+                          to={demoPath(episode)}
+                          title={`Part ${i + 1} — ${episode.title}`}
+                          className={({ isActive }) =>
+                            cn(
+                              'group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors',
+                              isActive
+                                ? 'bg-slate-800 ring-1 ring-slate-700'
+                                : 'hover:bg-slate-900',
+                            )
+                          }
+                        >
+                          <span
+                            className={cn(
+                              'flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-800/80 ring-1 ring-slate-700',
+                              episode.accentClass,
+                            )}
+                          >
+                            <EpisodeIcon className="h-4 w-4" />
+                          </span>
+                          <span className="block min-w-0 flex-1 truncate text-[13px] font-medium text-slate-300">
+                            {episode.title}
+                          </span>
+                        </NavLink>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )
           }
@@ -242,6 +460,6 @@ export function Sidebar({ registry }: SidebarProps) {
           )
         })}
       </nav>
-    </aside>
+    </>
   )
 }

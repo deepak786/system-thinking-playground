@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FileText } from 'lucide-react'
 import { cn } from '../../../../lib/cn'
+import { useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import type { DocumentChunk } from '../data'
 
 /**
@@ -31,17 +32,18 @@ type Props = {
   className?: string
 }
 
+/** Opacity/scale only — animated CSS filters (grayscale) jank hard on mobile GPUs. */
 const MODE_TARGETS: Record<
   RetrievalMode,
-  { opacity: number; scale: number; y: number; filter: string }
+  { opacity: number; scale: number; y: number }
 > = {
-  idle: { opacity: 1, scale: 1, y: 0, filter: 'grayscale(0)' },
-  checking: { opacity: 1, scale: 1.02, y: -3, filter: 'grayscale(0)' },
-  rejected: { opacity: 0.45, scale: 0.97, y: 0, filter: 'grayscale(1)' },
-  gone: { opacity: 0, scale: 0.95, y: 0, filter: 'grayscale(1)' },
-  rank1: { opacity: 1, scale: 1.02, y: 0, filter: 'grayscale(0)' },
-  rank2: { opacity: 1, scale: 1, y: 0, filter: 'grayscale(0)' },
-  rank3: { opacity: 1, scale: 1, y: 0, filter: 'grayscale(0)' },
+  idle: { opacity: 1, scale: 1, y: 0 },
+  checking: { opacity: 1, scale: 1.02, y: -3 },
+  rejected: { opacity: 0.4, scale: 0.97, y: 0 },
+  gone: { opacity: 0, scale: 0.95, y: 0 },
+  rank1: { opacity: 1, scale: 1.02, y: 0 },
+  rank2: { opacity: 1, scale: 1, y: 0 },
+  rank3: { opacity: 1, scale: 1, y: 0 },
 }
 
 /** Signal-strength bars: an instantly readable, number-free ranking. */
@@ -87,6 +89,7 @@ export function RetrievalCard({
   layoutId,
   className,
 }: Props) {
+  const sharedId = useOptionalLayoutId(layoutId)
   const rank = mode === 'rank1' || mode === 'rank2' || mode === 'rank3' ? mode : null
 
   // The entrance delay must only apply to the initial mount — never when a
@@ -104,7 +107,7 @@ export function RetrievalCard({
 
   return (
     <motion.li
-      layoutId={layoutId}
+      layoutId={sharedId}
       initial={{ opacity: 0, y: 14, scale: 0.97 }}
       animate={MODE_TARGETS[mode]}
       transition={transition}

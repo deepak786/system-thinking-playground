@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { RagMotion } from '../shared/RagMotion'
 import { ArrowRight, Check, RotateCcw, Scissors, ScanLine, X } from 'lucide-react'
 import { cn } from '../../../lib/cn'
 import { demoPathById } from '../../paths'
@@ -185,7 +186,7 @@ export function PdfChunking() {
   }
 
   return (
-    <MotionConfig reducedMotion="user">
+    <RagMotion>
       <div className="-m-4 flex min-h-full flex-col justify-center rounded-3xl bg-[#fafaf9] px-5 py-[clamp(16px,2.5vh,28px)] sm:px-8 lg:-m-6">
         <div className="mx-auto flex w-full max-w-[680px] flex-col px-2">
           {/* Header crossfades between steps; the canvas below persists. */}
@@ -561,6 +562,6 @@ export function PdfChunking() {
           )}
         </div>
       </div>
-    </MotionConfig>
+    </RagMotion>
   )
 }

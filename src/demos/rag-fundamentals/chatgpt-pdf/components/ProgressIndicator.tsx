@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { riseIn } from '../animations'
+import { useEntranceVariants } from '../animations'
 import { TOTAL_STEPS } from '../data'
 
 type Props = {
@@ -13,9 +13,11 @@ type Props = {
  * visitors know this is a short guided journey before they commit to anything.
  */
 export function ProgressIndicator({ current, title }: Props) {
+  const { rise, lite } = useEntranceVariants()
+
   return (
     <motion.div
-      variants={riseIn}
+      variants={rise}
       className="flex flex-col items-center gap-1.5"
       aria-label={`Step ${current} of ${TOTAL_STEPS}: ${title}`}
     >
@@ -27,14 +29,16 @@ export function ProgressIndicator({ current, title }: Props) {
         {Array.from({ length: TOTAL_STEPS }, (_, i) => {
           const isActive = i + 1 === current
           return isActive ? (
-            // The active step reads as a small pill, not just a colored dot —
-            // "you are here" is legible from shape alone. It pops in a beat
-            // after the label appears.
             <motion.span
               key={i}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 22, delay: 0.6 }}
+              transition={{
+                type: 'spring',
+                stiffness: lite ? 420 : 500,
+                damping: 22,
+                delay: lite ? 0.25 : 0.6,
+              }}
               className="h-2 w-5 rounded-full bg-[#0071e3]"
             />
           ) : (

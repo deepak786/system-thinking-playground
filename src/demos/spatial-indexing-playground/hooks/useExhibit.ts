@@ -55,6 +55,9 @@ function enterDuration(chapterId: ChapterId): number {
   return ENTER_MS
 }
 
+/** ~30fps React updates — enough for animation, far cheaper on mobile. */
+const PROGRESS_COMMIT_MS = 33
+
 function animateEnter(
   runIdRef: { current: number },
   myId: number,
@@ -63,11 +66,15 @@ function animateEnter(
 ) {
   const duration = enterDuration(chapterId)
   const start = performance.now()
+  let lastCommit = 0
   const tick = (now: number) => {
     if (runIdRef.current !== myId) return
     const t = Math.min(1, (now - start) / duration)
     const eased = 1 - (1 - t) * (1 - t)
-    setState((s) => ({ ...s, enterProgress: eased }))
+    if (t >= 1 || now - lastCommit >= PROGRESS_COMMIT_MS) {
+      lastCommit = now
+      setState((s) => ({ ...s, enterProgress: eased }))
+    }
     if (t < 1) {
       requestAnimationFrame(tick)
     } else {
@@ -87,11 +94,15 @@ function animateSearch(
   setState: Dispatch<SetStateAction<ExhibitState>>,
 ) {
   const start = performance.now()
+  let lastCommit = 0
   const tick = (now: number) => {
     if (runIdRef.current !== myId) return
     const t = Math.min(1, (now - start) / SEARCH_MS)
     const eased = 1 - (1 - t) * (1 - t)
-    setState((s) => ({ ...s, visitProgress: eased }))
+    if (t >= 1 || now - lastCommit >= PROGRESS_COMMIT_MS) {
+      lastCommit = now
+      setState((s) => ({ ...s, visitProgress: eased }))
+    }
     if (t < 1) {
       requestAnimationFrame(tick)
     } else {

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../../../lib/cn'
+import { useLiteMotion } from '../../../../lib/useLiteMotion'
 import {
   CHUNK_TITLES,
   FRAGMENTS_SMALL,
@@ -117,7 +118,12 @@ export function ChunkCanvas({
   answerRevealed = false,
   introFlash = false,
 }: Props) {
+  const lite = useLiteMotion()
   const isBlock = stage === 'intro' || stage === 'scan' || stage === 'slice'
+  const tileLayoutId = (i: number) => (lite ? undefined : `tile-${i}`)
+  const tileTransition = lite
+    ? { type: 'tween' as const, duration: 0.2, ease: 'easeOut' as const }
+    : SPRING
 
   if (isBlock) {
     return (
@@ -138,7 +144,7 @@ export function ChunkCanvas({
             return (
               <motion.div
                 key={`tile-${i}`}
-                layoutId={`tile-${i}`}
+                layoutId={tileLayoutId(i)}
                 animate={{
                   // The cut: pieces visibly shear apart, not just drift.
                   x: stage === 'slice' ? (i % 2 === 0 ? -5 : 5) : 0,
@@ -154,8 +160,12 @@ export function ChunkCanvas({
                 }}
                 transition={
                   introFlash
-                    ? { duration: 0.55, ease: 'easeOut', delay: i * 0.09 }
-                    : SPRING
+                    ? {
+                        duration: lite ? 0.3 : 0.55,
+                        ease: 'easeOut',
+                        delay: lite ? 0 : i * 0.09,
+                      }
+                    : tileTransition
                 }
                 className={cn(
                   'flex h-[20px] items-center rounded-[3px] px-2 transition-[background-color,box-shadow] duration-400',
@@ -209,7 +219,7 @@ export function ChunkCanvas({
 
   return (
     <motion.ul
-      layout
+      layout={!lite}
       className={cn('grid w-full max-w-[400px] gap-2', lvl.colsClass)}
     >
       <AnimatePresence initial={false}>
@@ -229,26 +239,30 @@ export function ChunkCanvas({
           return (
             <motion.li
               key={`tile-${i}`}
-              layoutId={`tile-${i}`}
-              layout
-              initial={{ opacity: 0, scale: 0.6 }}
+              layoutId={tileLayoutId(i)}
+              layout={!lite}
+              initial={{ opacity: 0, scale: lite ? 1 : 0.6 }}
               animate={{
                 opacity: isDimmed ? 0.22 : 1,
                 scale: isRelevant ? 1.06 : 1,
               }}
-              exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.18 } }}
+              exit={{
+                opacity: 0,
+                scale: lite ? 1 : 0.6,
+                transition: { duration: 0.15 },
+              }}
               transition={
                 revealing
                   ? {
-                      ...SPRING,
+                      ...tileTransition,
                       opacity: {
-                        duration: 1.3,
+                        duration: lite ? 0.35 : 1.3,
                         ease: 'easeInOut',
-                        delay: 0.1 + i * 0.05,
+                        delay: lite ? 0 : 0.1 + i * 0.05,
                       },
-                      scale: { ...SPRING, delay: 1.3 },
+                      scale: { ...tileTransition, delay: lite ? 0.15 : 1.3 },
                     }
-                  : SPRING
+                  : tileTransition
               }
               className={cn(
                 'flex items-center justify-center overflow-hidden rounded-md border transition-[background-color,border-color,box-shadow]',

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { FileText, MessageCircleQuestion } from 'lucide-react'
 import { cn } from '../../../../lib/cn'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import type { Relevance } from '../data'
 import { RelevanceBadge } from './RelevanceBadge'
 
@@ -41,13 +42,15 @@ export function ChunkCard({
   justChecked = false,
   faded = false,
 }: ChunkCardProps) {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId(`card-${title}`)
   const rejected = verdictShown && relevance === 'no'
   const kept = verdictShown && relevance !== 'no'
 
   return (
     <motion.div
-      layoutId={`card-${title}`}
-      layout
+      layoutId={sharedId}
+      layout={!lite}
       animate={{
         opacity: faded && relevance === 'no' ? 0.12 : rejected ? 0.55 : 1,
         scale: active ? 1.07 : 1,

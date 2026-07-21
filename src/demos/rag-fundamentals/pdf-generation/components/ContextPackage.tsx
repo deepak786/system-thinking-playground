@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Package } from 'lucide-react'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { INFO_CHUNKS, QUESTION } from '../data'
 import { SPRING } from '../animations'
 
@@ -8,10 +9,12 @@ import { SPRING } from '../animations'
  * three human-readable lines. This is what arrives at ChatGPT's door.
  */
 export function ContextPackage() {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId('gen-package')
   return (
     <motion.div
-      layoutId="gen-package"
-      layout
+      layoutId={sharedId}
+      layout={!lite}
       transition={SPRING}
       className="flex w-full max-w-[460px] flex-col gap-3 rounded-2xl border border-[#0071e3]/30 bg-white px-6 py-5 text-left shadow-[0_10px_32px_rgba(0,113,227,0.12)]"
     >

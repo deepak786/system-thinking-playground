@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { FileText } from 'lucide-react'
 import { cn } from '../../../../lib/cn'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { SPRING } from '../animations'
 
 type Props = {
@@ -27,10 +28,12 @@ export function ChunkCard({
   faded = false,
   mini = false,
 }: Props) {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId(selected ? `ctx-chunk-${title}` : undefined)
   return (
     <motion.div
-      layoutId={selected ? `ctx-chunk-${title}` : undefined}
-      layout={selected}
+      layoutId={sharedId}
+      layout={selected && !lite}
       animate={{ opacity: faded ? 0.15 : 1 }}
       transition={{
         ...SPRING,

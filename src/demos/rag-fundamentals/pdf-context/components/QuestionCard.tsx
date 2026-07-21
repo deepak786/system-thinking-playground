@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { MessageCircleQuestion } from 'lucide-react'
 import { cn } from '../../../../lib/cn'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { QUESTION } from '../data'
 import { SPRING } from '../animations'
 
@@ -15,10 +16,12 @@ type Props = {
  * assembly, and into the context container.
  */
 export function QuestionCard({ mini = false }: Props) {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId('question-card')
   return (
     <motion.div
-      layoutId="question-card"
-      layout
+      layoutId={sharedId}
+      layout={!lite}
       transition={SPRING}
       className={cn(
         'flex max-w-full items-center gap-2 rounded-xl border border-[#0071e3]/30 bg-[#0071e3]/[0.05] shadow-[0_2px_10px_rgba(0,113,227,0.10)]',

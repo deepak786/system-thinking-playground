@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { RagMotion } from '../shared/RagMotion'
+import { useOptionalLayoutId } from '../../../lib/useLiteMotion'
 import { ArrowRight, Package, Plus, RotateCcw, Send } from 'lucide-react'
 import { demoPathById } from '../../paths'
 import { EASE_OUT, SPRING, staggerContainer } from './animations'
@@ -72,6 +74,7 @@ const ENDING_HEADER = {
 }
 
 export function PdfContext() {
+  const pdfShellId = useOptionalLayoutId('pdf-shell')
   const [stage, setStage] = useState<Stage>('select')
   const [selectBeat, setSelectBeat] = useState(0)
   const [assembleBeat, setAssembleBeat] = useState(0)
@@ -190,7 +193,7 @@ export function PdfContext() {
   const restart = () => setStage('select')
 
   return (
-    <MotionConfig reducedMotion="user">
+    <RagMotion>
       <div className="-m-4 flex min-h-full flex-col justify-center rounded-3xl bg-[#fafaf9] px-5 py-[clamp(16px,2.5vh,28px)] sm:px-8 lg:-m-6">
         <div className="mx-auto flex w-full max-w-[680px] flex-col px-2">
           {/* Header crossfades between steps; the canvas below persists. */}
@@ -221,7 +224,7 @@ export function PdfContext() {
                   <PDFCard />
                 ) : (
                   <motion.ul
-                    layoutId="pdf-shell"
+                    layoutId={pdfShellId}
                     transition={SPRING}
                     className="grid w-full max-w-[480px] grid-cols-2 gap-2 rounded-2xl sm:grid-cols-4"
                   >
@@ -512,6 +515,6 @@ export function PdfContext() {
           )}
         </div>
       </div>
-    </MotionConfig>
+    </RagMotion>
   )
 }

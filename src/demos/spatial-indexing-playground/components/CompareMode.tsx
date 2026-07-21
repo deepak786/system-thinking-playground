@@ -77,21 +77,25 @@ export function CompareMode({
       )
 
       const start = performance.now()
+      let lastCommit = 0
       const tick = (now: number) => {
         if (runIdRef.current !== myId) return
         const t = Math.min(1, (now - start) / SEARCH_MS)
         const eased = 1 - (1 - t) * (1 - t)
-        setLanes((prev) => {
-          const next = { ...prev }
-          for (const ch of CHAPTERS) {
-            next[ch.id] = {
-              ...next[ch.id]!,
-              visitProgress: eased,
-              beat: t < 1 ? 'searching' : 'revealing',
+        if (t >= 1 || now - lastCommit >= 33) {
+          lastCommit = now
+          setLanes((prev) => {
+            const next = { ...prev }
+            for (const ch of CHAPTERS) {
+              next[ch.id] = {
+                ...next[ch.id]!,
+                visitProgress: eased,
+                beat: t < 1 ? 'searching' : 'revealing',
+              }
             }
-          }
-          return next
-        })
+            return next
+          })
+        }
         if (t < 1) {
           requestAnimationFrame(tick)
         } else {

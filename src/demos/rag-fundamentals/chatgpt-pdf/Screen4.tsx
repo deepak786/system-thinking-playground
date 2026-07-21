@@ -4,6 +4,7 @@ import { Check, MessageCircle, MessageCircleQuestion } from 'lucide-react'
 import { EASE_OUT, riseIn, staggerContainer } from './animations'
 import { SELECTED_CHUNKS } from './data'
 import { cn } from '../../../lib/cn'
+import { useLiteMotion } from '../../../lib/useLiteMotion'
 import { ProgressIndicator } from './components/ProgressIndicator'
 import { QuestionChip } from './components/QuestionChip'
 import { NextStepButton } from './components/NextStepButton'
@@ -54,7 +55,9 @@ const PHASE_AT_MS: Record<Exclude<Phase, 'enter'>, number> = {
  * "ChatGPT receives only my question and the most relevant chunks."
  */
 export function Screen4({ question, onNext }: Props) {
+  const lite = useLiteMotion()
   const [phase, setPhase] = useState<Phase>('enter')
+  const questionLayoutId = lite ? undefined : 'question-package'
 
   useEffect(() => {
     const timeouts = (
@@ -94,7 +97,7 @@ export function Screen4({ question, onNext }: Props) {
           it departs to join the package. */}
       <div className="mt-[clamp(14px,2.5vh,24px)] flex min-h-[38px] items-center justify-center">
         {!reached('join') && (
-          <motion.div layoutId="question-package">
+          <motion.div layoutId={questionLayoutId}>
             <QuestionChip question={question} />
           </motion.div>
         )}
@@ -140,8 +143,10 @@ export function Screen4({ question, onNext }: Props) {
                   its slot above, now the package's first row. */}
               {reached('join') && (
                 <motion.li
-                  layoutId="question-package"
-                  layout
+                  layoutId={questionLayoutId}
+                  layout={!lite}
+                  initial={lite ? { opacity: 0 } : false}
+                  animate={lite ? { opacity: 1 } : undefined}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   className={cn(
                     'flex items-center gap-2 rounded-full border bg-[#0071e3]/[0.04] py-2 pl-3 pr-4 transition-[border-color] duration-500',

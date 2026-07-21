@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { MessageCircleQuestion } from 'lucide-react'
-import { riseIn } from '../animations'
+import { useEntranceVariants } from '../animations'
 
 type Props = {
   value: string
@@ -12,8 +12,10 @@ type Props = {
  * (retrieval results, answer) is scripted around this exact question.
  */
 export function QuestionPanel({ value }: Props) {
+  const { rise } = useEntranceVariants()
+
   return (
-    <motion.div variants={riseIn}>
+    <motion.div variants={rise}>
       <p className="text-[13px] font-medium uppercase tracking-[0.08em] text-[#86868b]">
         Your Question
       </p>

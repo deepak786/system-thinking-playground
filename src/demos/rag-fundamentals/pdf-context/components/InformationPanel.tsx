@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Send } from 'lucide-react'
 import { cn } from '../../../../lib/cn'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { QUESTION, SELECTED_CHUNKS } from '../data'
 import { SPRING } from '../animations'
 
@@ -18,10 +19,12 @@ type Props = {
  * ContextContainer so the parcel morphs into this panel.
  */
 export function InformationPanel({ compact = false, pulseIndex = -1 }: Props) {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId('package')
   return (
     <motion.div
-      layoutId="package"
-      layout
+      layoutId={sharedId}
+      layout={!lite}
       transition={SPRING}
       className={cn(
         'flex w-full flex-col rounded-2xl border border-[#0071e3]/30 bg-white text-left shadow-[0_10px_32px_rgba(0,113,227,0.12)]',

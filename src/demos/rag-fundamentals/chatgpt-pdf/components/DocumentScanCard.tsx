@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, FileText } from 'lucide-react'
 import { cn } from '../../../../lib/cn'
+import { useLiteMotion } from '../../../../lib/useLiteMotion'
 import type { DemoDocument } from '../data'
 import {
   SCAN_CFG,
@@ -31,11 +32,12 @@ const LINE_WIDTHS = ['80%', '62%', '74%', '55%', '78%', '66%', '48%']
  *  processed → dimmed pill with a "✓ n chunks" badge
  */
 export function DocumentScanCard({ doc, docIndex, mode, speed }: Props) {
+  const lite = useLiteMotion()
   const isPage = mode === 'scan' || mode === 'slice' || mode === 'transform'
 
   return (
     <motion.li
-      layout
+      layout={!lite}
       transition={{ layout: { type: 'spring', stiffness: 350, damping: 32 } }}
       className="flex items-center justify-center"
     >
@@ -121,6 +123,7 @@ function ScanPage({
   sub: DocSub
   speed: DocSpeed
 }) {
+  const lite = useLiteMotion()
   const cfg = SCAN_CFG[speed]
   const scanning = sub === 'scan'
   const slicing = sub === 'slice'
@@ -128,9 +131,9 @@ function ScanPage({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: lite ? 1 : 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
+      exit={{ opacity: 0, scale: lite ? 1 : 0.9 }}
       transition={{ duration: 0.22, ease: 'easeOut' }}
       className="flex w-[104px] flex-col items-center"
     >
@@ -158,7 +161,7 @@ function ScanPage({
             return (
               <motion.div
                 key={i}
-                layoutId={sliceLayoutId(docIndex, i)}
+                layoutId={lite ? undefined : sliceLayoutId(docIndex, i)}
                 animate={
                   slicing
                     ? {
@@ -166,10 +169,11 @@ function ScanPage({
                         // aligned, so "divided" registers before anything moves.
                         y: (i - (SLICE_COUNT - 1) / 2) * 4,
                         transition: {
-                          delay: cfg.separateDelayS,
-                          type: 'spring',
-                          stiffness: 400,
-                          damping: 28,
+                          delay: lite ? 0 : cfg.separateDelayS,
+                          type: lite ? ('tween' as const) : ('spring' as const),
+                          duration: lite ? 0.2 : undefined,
+                          stiffness: lite ? undefined : 400,
+                          damping: lite ? undefined : 28,
                         },
                       }
                     : { y: 0 }

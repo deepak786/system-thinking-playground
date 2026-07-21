@@ -5,7 +5,6 @@ import {
   useRef,
   type MouseEvent,
 } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
 import {
   hexCorners,
   hexSizeForDim,
@@ -22,6 +21,10 @@ import type {
 import { GRID_DIM } from '../utils/constants'
 import { cellKey } from '../utils/geometry'
 import { cn } from '../../../lib/cn'
+import {
+  createCanvasSizeCache,
+  syncCanvasSize,
+} from '../../../lib/canvas2d'
 
 type ExhibitMapProps = {
   shops: CoffeeShop[]
@@ -42,6 +45,7 @@ type ExhibitMapProps = {
 
 /**
  * Large cinematic city map — shops, partitions, search rays.
+ * Tuned for mobile: avoid canvas reallocations, cheap shop dots, capped DPR.
  */
 export function ExhibitMap({
   shops,
@@ -61,11 +65,26 @@ export function ExhibitMap({
 }: ExhibitMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
+  const sizeCache = useRef(createCanvasSizeCache())
 
   const shopById = useMemo(() => {
     const m = new Map<number, CoffeeShop>()
     for (const s of shops) m.set(s.id, s)
     return m
+  }, [shops])
+
+  const quadLeaves = useMemo(
+    () => quadPreview.filter((n) => n.isLeaf),
+    [quadPreview],
+  )
+
+  /** Fewer dots on small screens — search still uses the full dataset. */
+  const drawShops = useMemo(() => {
+    if (typeof window === 'undefined') return shops
+    const narrow = window.matchMedia('(max-width: 768px)').matches
+    if (!narrow || shops.length <= 2200) return shops
+    const step = Math.ceil(shops.length / 2200)
+    return shops.filter((_, i) => i % step === 0)
   }, [shops])
 
   const visitedCount = Math.floor(visitProgress * animatedCandidateIds.length)
@@ -95,32 +114,14 @@ export function ExhibitMap({
     const canvas = canvasRef.current
     const wrap = wrapRef.current
     if (!canvas || !wrap) return
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const w = wrap.clientWidth
-    const h = wrap.clientHeight
-    if (w < 2 || h < 2) return
-    canvas.width = Math.floor(w * dpr)
-    canvas.height = Math.floor(h * dpr)
-    canvas.style.width = `${w}px`
-    canvas.style.height = `${h}px`
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    const sized = syncCanvasSize(canvas, wrap, sizeCache.current, {
+      alpha: false,
+    })
+    if (!sized) return
+    const { ctx, w, h } = sized
 
-    // Soft museum floor
-    const g = ctx.createLinearGradient(0, 0, w, h)
-    g.addColorStop(0, '#f7f6f3')
-    g.addColorStop(1, '#ebe8e2')
-    ctx.fillStyle = g
+    ctx.fillStyle = '#f0eeea'
     ctx.fillRect(0, 0, w, h)
-
-    // Subtle paper grain via sparse dots
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.03)'
-    for (let i = 0; i < 80; i++) {
-      const x = ((i * 97) % w) + 0.5
-      const y = ((i * 53) % h) + 0.5
-      ctx.fillRect(x, y, 1, 1)
-    }
 
     const searching =
       beat === 'searching' || beat === 'revealing' || beat === 'conclude'
@@ -135,13 +136,14 @@ export function ExhibitMap({
       beat,
       result,
       cellSet,
-      quadPreview,
+      quadLeaves,
       hexLattice,
     )
 
-    // Shops
+    // Cheap dots (rects) — arcs are too expensive at ~5k points on mobile GPUs.
     const shopR = compact ? 1.1 : 1.35
-    for (const shop of shops) {
+    const diam = shopR * 2
+    for (const shop of drawShops) {
       const isCand = !result || candidateSet.has(shop.id)
       const isNearest = nearest?.id === shop.id
       let alpha = 0.55
@@ -150,24 +152,22 @@ export function ExhibitMap({
       if (beat === 'enter' && chapterId === 'naive') {
         alpha = 0.25 + enterProgress * 0.55
       }
-      ctx.beginPath()
       ctx.fillStyle = isNearest
         ? `rgba(16, 185, 129, ${alpha})`
         : `rgba(120, 72, 40, ${alpha})`
-      ctx.arc(shop.x * w, shop.y * h, shopR, 0, Math.PI * 2)
-      ctx.fill()
+      ctx.fillRect(shop.x * w - shopR, shop.y * h - shopR, diam, diam)
     }
 
-    // Search rays (subset)
     if (beat === 'searching' && visitedCount > 0) {
       ctx.lineWidth = compact ? 0.6 : 0.85
       const count = Math.min(visitedCount, animatedCandidateIds.length)
-      for (let i = Math.max(0, count - 40); i < count; i++) {
+      const rayStart = Math.max(0, count - 24)
+      for (let i = rayStart; i < count; i++) {
         const id = animatedCandidateIds[i]!
         const shop = shopById.get(id)
         if (!shop) continue
-        const age = (count - i) / 40
-        ctx.strokeStyle = `rgba(59, 130, 246, ${0.18 * (1 - age)})`
+        const age = (count - i) / 24
+        ctx.strokeStyle = `rgba(59, 130, 246, ${0.16 * (1 - age)})`
         ctx.beginPath()
         ctx.moveTo(user.x * w, user.y * h)
         ctx.lineTo(shop.x * w, shop.y * h)
@@ -175,14 +175,14 @@ export function ExhibitMap({
       }
     }
   }, [
-    shops,
+    drawShops,
     user,
     chapterId,
     beat,
     enterProgress,
     result,
     animatedCandidateIds,
-    quadPreview,
+    quadLeaves,
     hexLattice,
     candidateSet,
     cellSet,
@@ -229,12 +229,10 @@ export function ExhibitMap({
     >
       <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" />
 
-      {/* User marker */}
-      <motion.div
-        className="pointer-events-none absolute z-10"
+      {/* User marker — CSS only, no spring re-layout every frame */}
+      <div
+        className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"
         style={{ left: `${user.x * 100}%`, top: `${user.y * 100}%` }}
-        animate={{ x: '-50%', y: '-50%' }}
-        transition={{ type: 'spring', stiffness: 280, damping: 28 }}
       >
         <div
           className={cn(
@@ -245,66 +243,53 @@ export function ExhibitMap({
         {!compact && (
           <div className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/15" />
         )}
-      </motion.div>
+      </div>
 
-      {/* Active check pulse */}
-      <AnimatePresence>
-        {activePos && beat === 'searching' && (
-          <motion.div
-            key={activeId}
-            className="pointer-events-none absolute z-10 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400"
-            style={{
-              left: `${activePos.x * 100}%`,
-              top: `${activePos.y * 100}%`,
-            }}
-            initial={{ scale: 0.4, opacity: 0.9 }}
-            animate={{ scale: 2.2, opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
+      {activePos && beat === 'searching' && (
+        <div
+          key={activeId}
+          className="pointer-events-none absolute z-10 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400 opacity-80"
+          style={{
+            left: `${activePos.x * 100}%`,
+            top: `${activePos.y * 100}%`,
+          }}
+        />
+      )}
+
+      {nearest && (
+        <div
+          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"
+          style={{
+            left: `${nearest.x * 100}%`,
+            top: `${nearest.y * 100}%`,
+          }}
+        >
+          <div
+            className={cn(
+              'rounded-full bg-emerald-500 shadow-md ring-2 ring-white',
+              compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5',
+            )}
           />
-        )}
-      </AnimatePresence>
-
-      {/* Nearest shop */}
-      <AnimatePresence>
-        {nearest && (
-          <motion.div
-            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"
-            style={{
-              left: `${nearest.x * 100}%`,
-              top: `${nearest.y * 100}%`,
-            }}
-            initial={{ scale: 0.6, opacity: 0 }}
-            animate={{ scale: [1, 1.25, 1], opacity: 1 }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <div
-              className={cn(
-                'rounded-full bg-emerald-500 shadow-md ring-2 ring-white',
-                compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5',
-              )}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       {!compact && !loading && (
         <>
-          <div className="pointer-events-none absolute left-4 top-4 z-20 flex flex-wrap gap-2">
+          <div className="pointer-events-none absolute left-3 top-3 z-20 flex flex-wrap gap-2 sm:left-4 sm:top-4">
             <LegendDot color="bg-blue-500" label="You" />
             <LegendDot color="bg-amber-800" label="Coffee shop" />
             <LegendDot color="bg-emerald-500" label="Nearest" />
           </div>
           {(beat === 'ready' || beat === 'conclude') && (
-            <p className="pointer-events-none absolute bottom-4 right-4 z-20 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-medium text-slate-600 shadow-sm ring-1 ring-slate-900/5">
-              Click anywhere to search
+            <p className="pointer-events-none absolute bottom-3 right-3 z-20 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-medium text-slate-600 shadow-sm ring-1 ring-slate-900/5 sm:bottom-4 sm:right-4">
+              Tap anywhere to search
             </p>
           )}
         </>
       )}
 
       {loading && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#f4f2ed]/55 backdrop-blur-[1px]">
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#f4f2ed]/70">
           <p className="rounded-full bg-slate-900/90 px-4 py-2 text-sm font-medium text-slate-100 shadow-sm">
             Loading
           </p>
@@ -332,7 +317,7 @@ function drawPartition(
   beat: ChapterBeat,
   result: SearchResult | null,
   cellSet: Set<string>,
-  quadPreview: QuadNodeVis[],
+  quadLeaves: QuadNodeVis[],
   hexLattice: HexCell[],
 ) {
   if (chapterId === 'naive') return
@@ -346,7 +331,6 @@ function drawPartition(
       if (appear <= 0) continue
       const t = i / dim
       ctx.globalAlpha = 0.35 + appear * 0.65
-      // Vertical grow downward, horizontal grow rightward
       ctx.beginPath()
       ctx.moveTo(t * w, 0)
       ctx.lineTo(t * w, h * appear)
@@ -376,13 +360,11 @@ function drawPartition(
   }
 
   if (chapterId === 'quadtree') {
-    // Progressive depth reveal by enterProgress
-    const maxDepth = Math.max(1, ...quadPreview.map((n) => n.depth))
+    const maxDepth = Math.max(1, ...quadLeaves.map((n) => n.depth), 1)
     const revealDepth = enterProgress * (maxDepth + 0.35)
-    const leaves = quadPreview.filter((n) => n.isLeaf)
     const showSearch = result && beat !== 'enter'
 
-    for (const n of leaves) {
+    for (const n of quadLeaves) {
       if (n.depth > revealDepth) continue
       const fade = Math.min(1, revealDepth - n.depth + 0.2)
       ctx.strokeStyle = `rgba(15, 23, 42, ${0.1 * fade})`
@@ -415,12 +397,13 @@ function drawPartition(
       const fade = Math.min(1, revealRing - cell.ring + 0.3)
       const corners = hexCorners(cell.cx, cell.cy, size)
       ctx.beginPath()
-      corners.forEach((p, i) => {
+      for (let i = 0; i < corners.length; i++) {
+        const p = corners[i]!
         const x = p.x * w
         const y = p.y * h
         if (i === 0) ctx.moveTo(x, y)
         else ctx.lineTo(x, y)
-      })
+      }
       ctx.closePath()
       ctx.strokeStyle = `rgba(15, 23, 42, ${0.12 * fade})`
       ctx.lineWidth = 1
@@ -431,12 +414,13 @@ function drawPartition(
       for (const cell of result.hexCells) {
         const corners = hexCorners(cell.cx, cell.cy, size)
         ctx.beginPath()
-        corners.forEach((p, i) => {
+        for (let i = 0; i < corners.length; i++) {
+          const p = corners[i]!
           const x = p.x * w
           const y = p.y * h
           if (i === 0) ctx.moveTo(x, y)
           else ctx.lineTo(x, y)
-        })
+        }
         ctx.closePath()
         ctx.fillStyle =
           cell.ring === 0

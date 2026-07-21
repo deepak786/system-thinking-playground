@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { MessageCircleQuestion } from 'lucide-react'
 import { cn } from '../../../../lib/cn'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { QUESTION } from '../data'
 
 type Props = {
@@ -13,14 +14,16 @@ type Props = {
  * it glide from below the chunk wall (Problem) to above it (Search).
  */
 export function QuestionBubble({ searching = false }: Props) {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId('question-bubble')
   return (
     <motion.div
-      layoutId="question-bubble"
-      layout
+      layoutId={sharedId}
+      layout={!lite}
       animate={searching ? { scale: [1, 1.03, 1] } : { scale: 1 }}
       transition={
         searching
-          ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }
+          ? { duration: lite ? 0.8 : 1.2, repeat: Infinity, ease: 'easeInOut' }
           : { type: 'spring', stiffness: 300, damping: 30 }
       }
       className={cn(

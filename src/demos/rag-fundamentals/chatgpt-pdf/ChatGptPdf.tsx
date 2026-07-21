@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { RagMotion } from '../shared/RagMotion'
 import { EASE_OUT } from './animations'
 import { DEFAULT_QUESTION } from './data'
 import { Screen1 } from './Screen1'
@@ -25,11 +26,12 @@ export function ChatGptPdf() {
   const [question, setQuestion] = useState(DEFAULT_QUESTION)
 
   return (
-    <MotionConfig reducedMotion="user">
+    <RagMotion>
       {/* Bleed over the dark panel padding so the light canvas fills it.
           Content is vertically centered so the composition sits at the
           optical center of tall viewports instead of hugging the top. */}
-      <div className="-m-4 flex min-h-full flex-col justify-center rounded-3xl bg-[#fafaf9] px-5 py-[clamp(16px,2.5vh,28px)] sm:px-8 lg:-m-6">
+      {/* Mobile: top-align so tall screens scroll cleanly. Desktop: optical center. */}
+      <div className="-m-4 flex min-h-full flex-col justify-start rounded-3xl bg-[#fafaf9] px-5 py-[clamp(16px,2.5vh,28px)] sm:px-8 lg:-m-6 lg:justify-center">
         <AnimatePresence mode="wait">
           {screen === 1 ? (
             <motion.div
@@ -97,6 +99,6 @@ export function ChatGptPdf() {
           )}
         </AnimatePresence>
       </div>
-    </MotionConfig>
+    </RagMotion>
   )
 }

@@ -3,6 +3,7 @@ import { FileText } from 'lucide-react'
 import { EASE_OUT } from '../animations'
 import type { DocumentChunk } from '../data'
 import { cn } from '../../../../lib/cn'
+import { useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 
 type Props = {
   chunk: DocumentChunk
@@ -24,10 +25,11 @@ type Props = {
  * chunk number (#23, #112…) hints that far more than 5 chunks exist.
  */
 export function ChunkCard({ chunk, delay, className, layoutId }: Props) {
-  const isShared = layoutId !== undefined
+  const sharedId = useOptionalLayoutId(layoutId)
+  const isShared = sharedId !== undefined
   return (
     <motion.li
-      layoutId={layoutId}
+      layoutId={sharedId}
       initial={isShared ? false : { opacity: 0, y: -28, scale: 0.94 }}
       animate={isShared ? undefined : { opacity: 1, y: 0, scale: 1 }}
       transition={

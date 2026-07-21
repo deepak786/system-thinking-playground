@@ -9,6 +9,7 @@ import {
   TOTAL_CHUNK_COUNT,
 } from './data'
 import { cn } from '../../../lib/cn'
+import { useLiteMotion } from '../../../lib/useLiteMotion'
 import { ProgressIndicator } from './components/ProgressIndicator'
 import { QuestionChip } from './components/QuestionChip'
 import { RetrievalCard, type RetrievalMode } from './components/RetrievalCard'
@@ -69,6 +70,7 @@ const CHIP_DELAY: Record<'rank1' | 'rank2' | 'rank3', number> = {
  * first finds the most relevant pieces."
  */
 export function Screen3({ question, onNext }: Props) {
+  const lite = useLiteMotion()
   const [phase, setPhase] = useState<Phase>({ kind: 'enter' })
 
   useEffect(() => {
@@ -142,16 +144,12 @@ export function Screen3({ question, onNext }: Props) {
       {/* The question physically reaches down toward the collection while
           checking — it is the thing doing the searching. */}
       <motion.div
-        animate={
-          isChecking
-            ? {
-                y: 12,
-                filter: 'drop-shadow(0 6px 14px rgba(0,113,227,0.25))',
-              }
-            : { y: 0, filter: 'drop-shadow(0 0px 0px rgba(0,113,227,0))' }
-        }
+        animate={isChecking ? { y: 10 } : { y: 0 }}
         transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-        className="mt-[clamp(14px,2.5vh,24px)]"
+        className={cn(
+          'mt-[clamp(14px,2.5vh,24px)] transition-shadow duration-300',
+          isChecking && 'drop-shadow-[0_6px_14px_rgba(0,113,227,0.25)]',
+        )}
       >
         <QuestionChip question={question} />
       </motion.div>
@@ -245,15 +243,18 @@ export function Screen3({ question, onNext }: Props) {
               {selectedChunks.map((chunk, i) => (
                 <motion.li
                   key={chunk.id}
-                  layoutId={`retrieval-${chunk.id}`}
-                  initial={false}
+                  layoutId={lite ? undefined : `retrieval-${chunk.id}`}
+                  initial={lite ? { opacity: 0, y: 8 } : false}
+                  animate={lite ? { opacity: 1, y: 0 } : undefined}
                   transition={{
                     layout: {
                       type: 'spring',
                       stiffness: 320,
                       damping: 30,
-                      delay: i * 0.08,
+                      delay: lite ? 0 : i * 0.08,
                     },
+                    duration: 0.2,
+                    delay: lite ? i * 0.05 : 0,
                   }}
                   style={{ zIndex: selectedChunks.length - i }}
                   className={cn(

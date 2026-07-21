@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { MessageCircleQuestion } from 'lucide-react'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { QUESTION } from '../data'
 import { SPRING } from '../animations'
 
@@ -8,10 +9,12 @@ import { SPRING } from '../animations'
  * writes, so the goal never leaves the screen.
  */
 export function QuestionCard() {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId('gen-question')
   return (
     <motion.div
-      layoutId="gen-question"
-      layout
+      layoutId={sharedId}
+      layout={!lite}
       transition={SPRING}
       className="flex max-w-full items-center gap-2 rounded-xl border border-[#0071e3]/30 bg-[#0071e3]/[0.05] px-4 py-2 shadow-[0_2px_10px_rgba(0,113,227,0.10)]"
     >

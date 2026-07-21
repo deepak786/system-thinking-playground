@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { FileText } from 'lucide-react'
+import { useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { PDF_NAME, PDF_PAGES } from '../data'
 import { SPRING } from '../animations'
 
@@ -8,9 +9,10 @@ import { SPRING } from '../animations'
  * of the episode is that this never reaches ChatGPT.
  */
 export function PDFCard() {
+  const sharedId = useOptionalLayoutId('pdf-shell')
   return (
     <motion.div
-      layoutId="pdf-shell"
+      layoutId={sharedId}
       transition={SPRING}
       className="flex flex-col items-center gap-3 rounded-2xl border border-black/[0.08] bg-white px-12 py-7 shadow-[0_8px_28px_rgba(0,0,0,0.07)]"
     >

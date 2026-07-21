@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { FileText } from 'lucide-react'
-import { cardGrid, riseIn } from '../animations'
+import { useEntranceVariants } from '../animations'
 import { DOCUMENTS } from '../data'
 import { cn } from '../../../../lib/cn'
 
@@ -10,8 +10,10 @@ import { cn } from '../../../../lib/cn'
  * pays off in later steps when one document gets highlighted.
  */
 export function DocumentLibrary() {
+  const { rise, cards, lite } = useEntranceVariants()
+
   return (
-    <motion.section variants={riseIn} aria-label="Company documents">
+    <motion.section variants={rise} aria-label="Company documents">
       <p className="text-[13px] font-medium uppercase tracking-[0.08em] text-[#86868b]">
         Company Documents
       </p>
@@ -23,18 +25,17 @@ export function DocumentLibrary() {
           orphan rows (2 cards on desktop, 1 on tablet) sit centered instead
           of ragged-left under a full row. */}
       <motion.ul
-        variants={cardGrid}
+        variants={cards}
         className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-4 lg:grid-cols-6"
       >
         {DOCUMENTS.map((doc, i) => (
           <motion.li
             key={doc.name}
-            variants={riseIn}
-            // Hover timing lives inside the hover target: a bare `transition`
-            // prop would also override the entrance animation's easing.
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
-            // Fixed min-height keeps every card the same size whether the
-            // name fits on one line or wraps naturally onto two.
+            variants={rise}
+            // Hover lift is desktop-only — continuous whileHover during
+            // scroll/tap on phones is what made the intro feel sticky.
+            whileHover={lite ? undefined : { y: -2, transition: { duration: 0.2 } }}
+            whileTap={lite ? { scale: 0.98 } : undefined}
             className={cn(
               'flex min-h-[80px] items-center gap-3 rounded-xl border border-black/[0.06] bg-white px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[box-shadow,border-color] duration-200 hover:border-black/[0.1] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)] sm:col-span-2',
               i === 3 && 'lg:col-start-2',

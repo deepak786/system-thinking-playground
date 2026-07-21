@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
 import { cn } from '../../../../lib/cn'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { SPRING } from '../animations'
 
 type Props = {
@@ -10,10 +11,12 @@ type Props = {
 
 /** ChatGPT as a quiet destination card — no anatomy, just a recipient. */
 export function ChatGPTCard({ active = false }: Props) {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId('gen-chatgpt')
   return (
     <motion.div
-      layoutId="gen-chatgpt"
-      layout
+      layoutId={sharedId}
+      layout={!lite}
       transition={SPRING}
       className={cn(
         'flex items-center gap-2.5 rounded-2xl border bg-white px-6 py-3.5',

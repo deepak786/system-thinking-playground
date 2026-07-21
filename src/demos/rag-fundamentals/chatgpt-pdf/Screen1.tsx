@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { staggerContainer } from './animations'
+import { useEntranceVariants } from './animations'
 import { DEFAULT_QUESTION } from './data'
 import { ProgressIndicator } from './components/ProgressIndicator'
 import { Hero } from './components/Hero'
@@ -19,9 +19,11 @@ type Props = {
  * Elements enter with a staggered fade-and-rise in reading order.
  */
 export function Screen1({ onStart }: Props) {
+  const { container } = useEntranceVariants()
+
   return (
     <motion.div
-      variants={staggerContainer}
+      variants={container}
       initial="hidden"
       animate="show"
       className="mx-auto flex w-full max-w-[680px] flex-col px-2"

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { Package } from 'lucide-react'
+import { useLiteMotion, useOptionalLayoutId } from '../../../../lib/useLiteMotion'
 import { SPRING } from '../animations'
 
 /**
@@ -9,10 +10,12 @@ import { SPRING } from '../animations'
  * the InformationPanel so the parcel "opens" into readable form.
  */
 export function ContextContainer({ children }: { children: ReactNode }) {
+  const lite = useLiteMotion()
+  const sharedId = useOptionalLayoutId('package')
   return (
     <motion.div
-      layoutId="package"
-      layout
+      layoutId={sharedId}
+      layout={!lite}
       transition={SPRING}
       className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-2xl border border-[#0071e3]/30 bg-white px-6 py-4 shadow-[0_10px_32px_rgba(0,113,227,0.12)]"
     >
